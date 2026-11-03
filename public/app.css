@@ -257,3 +257,5 @@ footer p{margin:0}
 .tdmini{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;border:0;padding:13px 16px;font-size:14px;color:var(--muted);border-radius:var(--r)}
 .tdmini b{color:var(--ink)}
 .tdmini .chev{color:var(--accent);font-weight:700}
+
+.stepsub{flex-basis:100%;margin:-6px 0 0;font-size:14px;color:var(--muted)}
