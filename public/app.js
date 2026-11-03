@@ -15,7 +15,7 @@ const store = {
 /* ── state ── */
 const today = new Date(); today.setHours(0, 0, 0, 0);
 const DAYS = Array.from({ length: 7 }, (_, i) => { const d = new Date(today); d.setDate(d.getDate() + i); return d; });
-const DEFAULT = { week: ["night", "night", "night", "off", "off", "off", "off"], len: 12, dayStart: "07:00", nightStart: "19:00", f: { odor: true, speed: true, nomic: false, hydro: true }, diet: { v: false, df: false, gf: false, nf: false }, post: false, style: "mix", seed: 1 };
+const DEFAULT = { store: "publix", week: ["night", "night", "night", "off", "off", "off", "off"], len: 12, dayStart: "07:00", nightStart: "19:00", f: { odor: true, speed: true, nomic: false, hydro: true }, diet: { v: false, df: false, gf: false, nf: false }, post: false, style: "mix", seed: 1 };
 let S = Object.assign(structuredClone(DEFAULT), store.get("settings", {}));
 if (!Array.isArray(S.week) || S.week.length !== 7) S.week = DEFAULT.week.slice();
 
@@ -71,6 +71,7 @@ $("#postToggle").addEventListener("change", e => { S.post = e.target.checked; sa
 $("#shuffleBtn").addEventListener("click", () => { S.seed = (Math.random() * 1e9) >>> 0 || 1; save(); regen(); toast("New plan"); });
 
 function syncControls() {
+  setSeg("#storeSeg", "store", S.store);
   setSeg("#lenSeg", "len", S.len); setSeg("#styleSeg", "style", S.style);
   $("#dayStart").value = S.dayStart; $("#nightStart").value = S.nightStart; $("#postToggle").checked = S.post;
   $$(".rule").forEach(b => b.setAttribute("aria-pressed", String(!!S.f[b.dataset.f])));
@@ -176,7 +177,7 @@ function renderHydro() {
 /* ── step 4: grocery ── */
 function checks() { return store.get("checks", {}); }
 function renderGrocery() {
-  const g = plan.grocery, done = checks();
+  const g = plan.grocery, done = checks(), st = STORES[S.store];
   $("#listMeta").textContent = `${g.rows.length} items`;
   const lo = g.leftovers.slice(0, 4);
   $("#waste").innerHTML = `<div class="meter" role="img" aria-label="${g.zeroWaste}% of fresh food used"><i style="width:${g.zeroWaste}%"></i></div>
@@ -185,8 +186,13 @@ function renderGrocery() {
   const by = {};
   g.rows.forEach(r => (by[r.dept] = by[r.dept] || []).push(r));
   $("#list").innerHTML = DEPT_ORDER.filter(d => by[d]).map(d => `<div class="dept"><h3>${d}</h3>${by[d].map(r => `
-    <label class="item${done[r.key] ? " done" : ""}"><input type="checkbox" data-key="${r.key}"${done[r.key] ? " checked" : ""}>
-      <span class="nm">${esc(r.name)}${r.uses ? `<small>${esc(r.uses)}${r.left ? ` · ${esc(r.left)} left` : ""}</small>` : ""}</span><span class="q">${esc(r.buy)}</span></label>`).join("")}</div>`).join("");
+    <div class="itemrow${st ? " shop" : ""}"><label class="item${done[r.key] ? " done" : ""}"><input type="checkbox" data-key="${r.key}"${done[r.key] ? " checked" : ""}>
+      <span class="nm">${esc(r.name)}${r.uses ? `<small>${esc(r.uses)}${r.left ? ` · ${esc(r.left)} left` : ""}</small>` : ""}</span><span class="q">${esc(r.buy)}</span></label>
+      ${st ? `<a class="find" href="${st.search(r.instacart.name)}" target="_blank" rel="noopener" aria-label="Find ${esc(r.name)} at ${st.name}">🔍</a>` : ""}</div>`).join("")}</div>`).join("");
+  const s2 = STORES[S.store];
+  $("#openStore").hidden = !s2;
+  if (s2) $("#openStore").textContent = `🛒 Open ${s2.name}`;
+  $("#exportNote").textContent = s2 ? `Tap 🔍 next to any item to find it at ${s2.name}, then add it to your cart. "Open ${s2.name}" also copies your full list.` : "Copy or share the list, or check items off here as you shop.";
   $("#pantry").innerHTML = g.pantry.length ? `<b>Check your pantry:</b> ${g.pantry.map(esc).join(", ")}` : "";
 }
 $("#list").addEventListener("change", e => {
@@ -226,20 +232,26 @@ $("#sharePlanBtn").addEventListener("click", async () => {
   toast(await copy(`${text} ${url}`) ? "Plan link copied" : "Couldn't share");
 });
 
+/* Store shopping mode: each item links to that store's own search. No API needed. */
+const STORES = {
+  publix: { name: "Publix", home: "https://delivery.publix.com/store/publix/storefront", search: q => `https://delivery.publix.com/store/publix/s?k=${encodeURIComponent(q)}` },
+  walmart: { name: "Walmart", home: "https://www.walmart.com/", search: q => `https://www.walmart.com/search?q=${encodeURIComponent(q)}` }
+};
+$("#storeSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.store = b.dataset.store; setSeg("#storeSeg", "store", S.store); save(); if (plan) renderGrocery(); });
+$("#openStore").addEventListener("click", () => { const st = STORES[S.store]; if (st) copyAndOpen(st.home, st.name); });
+
 /* No API key needed: copy the list, then open the store so it can be pasted into search */
 async function copyAndOpen(url, store) {
   const ok = await copy(listText());   // copy first, while the tap still counts as a user action
   const win = window.open(url, "_blank"); if (win) { try { win.opener = null; } catch (e) {} }
-  toast(ok ? `List copied. Paste it into ${store} search.` : `Opening ${store}…`);
+  toast(ok ? `List copied. Opening ${store}…` : `Opening ${store}…`);
   if (!win) location.href = url;
 }
-$("#openInstacart").addEventListener("click", () => copyAndOpen("https://www.instacart.com/store", "Instacart"));
-$("#openWalmart").addEventListener("click", () => copyAndOpen("https://www.walmart.com/", "Walmart"));
 
 /* Instacart (enabled when the site has an Instacart Developer Platform key) */
 async function checkInstacart() {
   if (PREVIEW) return;
-  try { const r = await fetch("/api/instacart"); const j = await r.json(); if (j.enabled) { $("#instacartBtn").hidden = false; $("#openInstacart").hidden = true; $("#exportNote").textContent = "Instacart opens with every item ready to add to your cart at a store you pick. Or copy the list for Walmart."; } } catch (e) {}
+  try { const r = await fetch("/api/instacart"); const j = await r.json(); if (j.enabled) { $("#instacartBtn").hidden = false; $("#exportNote").textContent = "Instacart opens with every item ready to add to your cart at a store you pick. Or copy the list for Walmart."; } } catch (e) {}
 }
 $("#instacartBtn").addEventListener("click", async () => {
   const btn = $("#instacartBtn"), win = window.open("", "_blank");

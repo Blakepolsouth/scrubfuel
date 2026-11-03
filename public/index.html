@@ -86,16 +86,21 @@
   <section class="grocery" id="grocery" aria-labelledby="gh">
     <div class="stephead"><span class="num">4</span><h2 id="gh">One-store grocery list</h2><span class="hint" id="listMeta"></span></div>
     <div class="waste" id="waste"></div>
+    <div class="storepick">
+      <span>Shopping at</span>
+      <div class="seg" role="radiogroup" aria-label="Store" id="storeSeg">
+        <button type="button" role="radio" data-store="publix">Publix</button><button type="button" role="radio" data-store="walmart">Walmart</button><button type="button" role="radio" data-store="any">Other</button>
+      </div>
+    </div>
     <div class="list" id="list"></div>
     <div class="pantry" id="pantry"></div>
     <div class="exports">
       <button class="btn primary" id="instacartBtn" type="button" hidden>🛒 Send to Instacart</button>
-      <button class="btn" id="openInstacart" type="button">🥕 Copy &amp; open Instacart</button>
-      <button class="btn" id="openWalmart" type="button">🛒 Copy &amp; open Walmart</button>
+      <button class="btn primary" id="openStore" type="button">🛒 Open Publix</button>
       <button class="btn" id="copyBtn" type="button">📋 Copy list</button>
       <button class="btn" id="shareListBtn" type="button">📤 Share list</button>
     </div>
-    <p class="note" id="exportNote">The Copy &amp; open buttons copy your list and open the store, so you can paste items into search. You can also check items off here as you shop.</p>
+    <p class="note" id="exportNote"></p>
   </section>
 
   <section class="unit">
