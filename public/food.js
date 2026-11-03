@@ -1,0 +1,121 @@
+/* ScrubFuel food data: ingredient catalog (how things are sold) and the recipe library.
+   Quantities are per single serving. Prices are rough US grocery estimates for planning only. */
+
+/* key: [name, department, package size, unit, package label, perishable, est. price per package] */
+const C = {
+  avocado: ["Avocado", "Produce", 1, "ea", "avocado", 1, 1.25],
+  banana: ["Banana", "Produce", 1, "ea", "banana", 1, 0.3],
+  apple: ["Apple", "Produce", 1, "ea", "apple", 1, 0.9],
+  spinach: ["Baby spinach", "Produce", 5, "oz", "5 oz bag", 1, 3.5],
+  greens: ["Spring mix greens", "Produce", 5, "oz", "5 oz box", 1, 3.75],
+  cucumber: ["Cucumber", "Produce", 1, "ea", "cucumber", 1, 0.85],
+  tomato: ["Cherry tomatoes", "Produce", 10, "oz", "10 oz pint", 1, 3.25],
+  pepper: ["Bell pepper", "Produce", 1, "ea", "pepper", 1, 1.1],
+  carrots: ["Baby carrots", "Produce", 16, "oz", "1 lb bag", 1, 1.6],
+  snappeas: ["Snap peas", "Produce", 8, "oz", "8 oz bag", 1, 3.0],
+  berries: ["Fresh berries", "Produce", 6, "oz", "6 oz pack", 1, 3.5],
+  grapes: ["Grapes", "Produce", 16, "oz", "1 lb bag", 1, 3.0],
+  lemon: ["Lemon", "Produce", 1, "ea", "lemon", 1, 0.7],
+  lime: ["Lime", "Produce", 1, "ea", "lime", 1, 0.4],
+  sweetpotato: ["Sweet potato", "Produce", 1, "ea", "sweet potato", 1, 1.1],
+  yogurt: ["Plain Greek yogurt", "Dairy & Eggs", 32, "oz", "32 oz tub", 1, 5.5],
+  cottage: ["Cottage cheese", "Dairy & Eggs", 16, "oz", "16 oz tub", 1, 3.5],
+  cheddar: ["Cheddar cheese", "Dairy & Eggs", 8, "oz", "8 oz block", 1, 3.25],
+  stringcheese: ["String cheese", "Dairy & Eggs", 12, "ea", "12 pack", 1, 5.0],
+  feta: ["Crumbled feta", "Dairy & Eggs", 4, "oz", "4 oz tub", 1, 3.5],
+  mozz: ["Mozzarella pearls", "Dairy & Eggs", 8, "oz", "8 oz tub", 1, 4.0],
+  milk: ["Milk", "Dairy & Eggs", 8, "cup", "half gallon", 1, 2.8],
+  eggs: ["Eggs", "Dairy & Eggs", 12, "ea", "dozen", 1, 3.5],
+  hummus: ["Hummus", "Deli", 10, "oz", "10 oz tub", 1, 3.5],
+  chicken: ["Rotisserie chicken (meat)", "Deli", 24, "oz", "rotisserie chicken", 1, 6.5],
+  turkey: ["Sliced deli turkey", "Deli", 8, "oz", "8 oz pack", 1, 4.5],
+  groundturkey: ["Ground turkey", "Meat", 16, "oz", "1 lb pack", 1, 5.5],
+  tofu: ["Extra-firm tofu", "Produce", 14, "oz", "14 oz block", 1, 2.5],
+  tuna: ["Tuna pouch", "Pantry", 1, "ea", "2.6 oz pouch", 0, 1.5],
+  salsa: ["Salsa", "Pantry", 16, "oz", "16 oz jar", 1, 3.0],
+  pesto: ["Basil pesto", "Pantry", 6, "oz", "6 oz jar", 1, 3.75],
+  chickpeas: ["Chickpeas", "Pantry", 1.5, "cup", "15 oz can", 1, 1.1],
+  blackbeans: ["Black beans", "Pantry", 1.5, "cup", "15 oz can", 1, 1.1],
+  tortilla: ["Large flour tortillas", "Bakery", 8, "ea", "8 count pack", 1, 3.0],
+  bread: ["Whole wheat bread", "Bakery", 20, "slice", "loaf", 1, 3.25],
+  ricecup: ["Microwavable brown rice cups", "Pantry", 2, "ea", "2 pack", 0, 2.5],
+  quinoa: ["Quinoa", "Pantry", 2, "cup", "12 oz bag", 0, 4.0],
+  pasta: ["Pasta (rotini)", "Pantry", 16, "oz", "1 lb box", 0, 1.5],
+  crackers: ["Whole grain crackers", "Pantry", 8, "oz", "8 oz box", 0, 3.0],
+  ricecakes: ["Rice cakes", "Pantry", 14, "ea", "14 count", 0, 2.75],
+  oats: ["Old-fashioned oats", "Pantry", 12, "cup", "42 oz canister", 0, 4.5],
+  granola: ["Granola", "Pantry", 4, "cup", "12 oz bag", 0, 4.0],
+  pb: ["Peanut butter", "Pantry", 28, "tbsp", "16 oz jar", 0, 2.75],
+  chia: ["Chia seeds", "Pantry", 24, "tbsp", "12 oz bag", 0, 5.0],
+  trailmix: ["Trail mix", "Snacks", 10, "oz", "10 oz bag", 0, 4.5],
+  almonds: ["Almonds", "Snacks", 6, "oz", "6 oz bag", 0, 4.0],
+  protein: ["Protein powder", "Pantry", 30, "scoop", "2 lb tub", 0, 30],
+  electrolyte: ["Electrolyte drink mix", "Beverages", 10, "ea", "10 packets", 0, 7.0],
+  edamame: ["Frozen shelled edamame", "Frozen", 12, "oz", "12 oz bag", 0, 2.75]
+};
+export const PANTRY = { oil: "Olive oil", saltpepper: "Salt & pepper", honey: "Honey", soy: "Soy sauce", chips: "Dark chocolate chips", cinnamon: "Cinnamon", vinegar: "Balsamic or red wine vinegar", seasoning: "Taco seasoning", mayo: "Mayo or Greek yogurt dressing" };
+
+export const CATALOG = Object.fromEntries(Object.entries(C).map(([k, v]) => [k, { key: k, name: v[0], dept: v[1], pkg: v[2], unit: v[3], label: v[4], perishable: !!v[5], price: v[6] }]));
+
+/* Recipe fields
+   slots: pre (before shift, at home) · meal (main meal on shift) · snack (grab on shift) · post (after shift, light)
+   odor: 0 none · 1 mild (eggs, light spices) · 2 strong (fish, garlic, chili spice)
+   mic: 0 none · 1 optional (fine cold) · 2 needs reheating
+   eat: minutes to eat · hand: one-handed · p: grams protein (approx.)
+   d: diet flags  v vegetarian · df dairy-free · gf gluten-free · nf nut-free
+   i: ingredients [key, qty] · pan: pantry staples · prep: home prep note */
+export const RECIPES = [
+  // ── On-shift meals ──
+  { id: "chicken-avo-wrap", n: "Chicken avocado wrap", slots: ["meal"], odor: 0, mic: 0, eat: 6, hand: 1, p: 32, d: "nf", i: [["tortilla", 1], ["chicken", 3], ["avocado", .5], ["spinach", .5], ["cheddar", .5]], pan: ["saltpepper"], prep: "Squeeze lemon on the avocado so it stays green. Wrap tight in foil." },
+  { id: "turkey-hummus-pinwheels", n: "Turkey hummus pinwheels", slots: ["meal", "snack"], odor: 0, mic: 0, eat: 5, hand: 1, p: 26, d: "df nf", i: [["tortilla", 1], ["turkey", 3], ["hummus", 1.5], ["spinach", .5], ["pepper", .25]], pan: [], prep: "Roll tight, slice into 6 pinwheels, pack in a small container." },
+  { id: "chicken-quinoa-bowl", n: "Lemon chicken quinoa bowl", slots: ["meal"], odor: 0, mic: 0, eat: 9, hand: 0, p: 35, d: "gf nf", i: [["quinoa", .33], ["chicken", 3], ["cucumber", .5], ["tomato", 2], ["feta", 1], ["lemon", .5]], pan: ["oil", "saltpepper"], prep: "Cook quinoa in a batch. Dress with lemon and olive oil. Great cold." },
+  { id: "chickpea-greek-jar", n: "Chickpea Greek salad jar", slots: ["meal"], odor: 0, mic: 0, eat: 8, hand: 0, p: 18, d: "v gf nf", i: [["chickpeas", .75], ["cucumber", .5], ["tomato", 2], ["feta", 1], ["pepper", .5], ["lemon", .5]], pan: ["oil", "vinegar", "saltpepper"], prep: "Dressing on the bottom, chickpeas next, greens and feta on top. Shake before eating." },
+  { id: "peanut-noodle-bowl", n: "Cold peanut noodle bowl", slots: ["meal"], odor: 0, mic: 0, eat: 8, hand: 0, p: 22, d: "v df", i: [["pasta", 2], ["pb", 2], ["carrots", 2], ["edamame", 2], ["lime", .5]], pan: ["soy", "honey"], prep: "Whisk peanut butter, soy, lime and honey. Toss with cooled pasta and veggies." },
+  { id: "chicken-burrito-bowl", n: "Chicken burrito bowl", slots: ["meal"], odor: 0, mic: 1, eat: 9, hand: 0, p: 36, d: "gf df nf", i: [["chicken", 3], ["ricecup", 1], ["blackbeans", .5], ["salsa", 2], ["avocado", .5], ["lime", .5]], pan: [], prep: "Good cold or warm. Pack avocado with lime on top." },
+  { id: "turkey-taco-bowl", n: "Turkey taco rice bowl", slots: ["meal"], odor: 1, mic: 2, eat: 9, hand: 0, p: 38, d: "gf nf", i: [["groundturkey", 4], ["ricecup", 1], ["blackbeans", .5], ["salsa", 2], ["cheddar", .5]], pan: ["seasoning", "oil"], prep: "Brown the turkey with taco seasoning. Portion with rice and beans. Reheat 90 seconds." },
+  { id: "sweet-potato-bean-bowl", n: "Sweet potato black bean bowl", slots: ["meal"], odor: 0, mic: 2, eat: 9, hand: 0, p: 14, d: "v df gf nf", i: [["sweetpotato", 1], ["blackbeans", .5], ["spinach", 1], ["salsa", 2], ["avocado", .5]], pan: ["oil", "saltpepper"], prep: "Roast cubed sweet potato at 425°F for 25 minutes. Reheat with beans; add avocado after." },
+  { id: "tofu-teriyaki-box", n: "Teriyaki tofu rice box", slots: ["meal"], odor: 0, mic: 1, eat: 9, hand: 0, p: 24, d: "v df nf", i: [["tofu", 7], ["ricecup", 1], ["snappeas", 3]], pan: ["soy", "honey", "oil"], prep: "Pan-crisp tofu cubes, glaze with soy and honey. Fine cold or warm." },
+  { id: "chicken-cheddar-bento", n: "Chicken & cheddar bento box", slots: ["meal"], odor: 0, mic: 0, eat: 6, hand: 1, p: 34, d: "nf", i: [["chicken", 3], ["cheddar", 1], ["grapes", 4], ["crackers", 1], ["carrots", 2]], pan: [], prep: "Pack in a divided container. Everything is finger food." },
+  { id: "med-snack-plate", n: "Mediterranean snack plate", slots: ["meal"], odor: 0, mic: 0, eat: 7, hand: 1, p: 17, d: "v nf", i: [["hummus", 3], ["crackers", 1.5], ["cucumber", .5], ["tomato", 2], ["feta", 1]], pan: [], prep: "Divided container, hummus in its own cup." },
+  { id: "turkey-cheddar-wrap", n: "Turkey cheddar spinach wrap", slots: ["meal", "snack"], odor: 0, mic: 0, eat: 5, hand: 1, p: 30, d: "nf", i: [["tortilla", 1], ["turkey", 3], ["cheddar", 1], ["spinach", .5]], pan: ["mayo"], prep: "Wrap tight in foil. Half now, half later works too." },
+  { id: "pesto-pasta-salad", n: "Pesto mozzarella pasta salad", slots: ["meal"], odor: 2, mic: 0, eat: 8, hand: 0, p: 18, d: "v", i: [["pasta", 2], ["pesto", 1.5], ["tomato", 2], ["mozz", 2], ["spinach", .5]], pan: [], prep: "Toss cooled pasta with pesto. Heads up: garlicky." },
+  { id: "tuna-crunch-box", n: "Tuna salad crunch box", slots: ["meal"], odor: 2, mic: 0, eat: 7, hand: 0, p: 25, d: "nf", i: [["tuna", 1], ["cucumber", .5], ["crackers", 1], ["greens", 1]], pan: ["mayo", "saltpepper"], prep: "Mix tuna with mayo or Greek yogurt. Strong smell in a breakroom." },
+  { id: "turkey-chili", n: "Turkey chili cup", slots: ["meal"], odor: 2, mic: 2, eat: 8, hand: 0, p: 36, d: "gf nf", i: [["groundturkey", 4], ["blackbeans", .5], ["salsa", 3], ["cheddar", .5]], pan: ["seasoning", "oil"], prep: "Simmer turkey, beans and salsa with seasoning for 15 minutes. Freezes well." },
+  { id: "egg-fried-rice", n: "Veggie egg fried rice", slots: ["meal"], odor: 2, mic: 2, eat: 8, hand: 0, p: 20, d: "v df nf", i: [["eggs", 2], ["ricecup", 1], ["edamame", 2], ["carrots", 2]], pan: ["soy", "oil"], prep: "Scramble eggs, toss with rice, veggies and soy. Reheated eggs carry a smell." },
+  { id: "quinoa-bean-salad", n: "Quinoa black bean fiesta salad", slots: ["meal"], odor: 0, mic: 0, eat: 7, hand: 0, p: 16, d: "v df gf nf", i: [["quinoa", .33], ["blackbeans", .5], ["pepper", .5], ["tomato", 2], ["lime", .5], ["avocado", .5]], pan: ["oil", "saltpepper"], prep: "Batch the quinoa, toss everything with lime and oil. Even better on day 2." },
+  { id: "edamame-rice-bento", n: "Edamame rice bento", slots: ["meal"], odor: 0, mic: 1, eat: 7, hand: 0, p: 15, d: "v df gf nf", i: [["ricecup", 1], ["edamame", 3], ["cucumber", .5], ["carrots", 2]], pan: ["oil", "saltpepper"], prep: "Rice cup, thawed edamame and crunchy veg. Fine cold." },
+  { id: "chicken-hummus-box", n: "Chicken hummus protein box", slots: ["meal", "snack"], odor: 0, mic: 0, eat: 6, hand: 1, p: 30, d: "gf df nf", i: [["chicken", 3], ["hummus", 2], ["carrots", 2], ["cucumber", .5], ["snappeas", 1]], pan: [], prep: "Divided container. Dip chicken and veggies in hummus." },
+  // ── Grab snacks ──
+  { id: "pb-banana-rollup", n: "PB banana roll-up", slots: ["snack"], odor: 0, mic: 0, eat: 3, hand: 1, p: 10, d: "v df", i: [["tortilla", 1], ["pb", 2], ["banana", 1]], pan: [], prep: "Spread, roll around the banana, wrap in foil." },
+  { id: "yogurt-berry-cup", n: "Greek yogurt berry cup", slots: ["snack", "post"], odor: 0, mic: 0, eat: 3, hand: 0, p: 17, d: "v nf", i: [["yogurt", 6], ["berries", 2], ["granola", .25]], pan: ["honey"], prep: "Pack granola separately so it stays crunchy." },
+  { id: "cottage-berries", n: "Cottage cheese & berries", slots: ["snack", "post"], odor: 0, mic: 0, eat: 3, hand: 0, p: 20, d: "v gf nf", i: [["cottage", 6], ["berries", 2]], pan: [], prep: "Small container with a lid. Spoon in your pocket." },
+  { id: "string-cheese-apple", n: "String cheese + apple", slots: ["snack"], odor: 0, mic: 0, eat: 3, hand: 1, p: 14, d: "v gf nf", i: [["stringcheese", 2], ["apple", 1]], pan: [], prep: "Zero prep. Grab and go." },
+  { id: "turkey-rollups", n: "Turkey cheddar roll-ups", slots: ["snack"], odor: 0, mic: 0, eat: 2, hand: 1, p: 20, d: "gf nf", i: [["turkey", 2], ["cheddar", 1]], pan: [], prep: "Roll cheese strips in turkey slices. Pack 4." },
+  { id: "hummus-veggie-cup", n: "Hummus veggie cup", slots: ["snack"], odor: 0, mic: 0, eat: 4, hand: 1, p: 6, d: "v df gf nf", i: [["hummus", 2], ["carrots", 2], ["snappeas", 1], ["cucumber", .25]], pan: [], prep: "Hummus at the bottom of a cup, veggies standing up in it." },
+  { id: "energy-bites", n: "No-bake energy bites", slots: ["snack"], odor: 0, mic: 0, eat: 2, hand: 1, p: 8, d: "v df", i: [["oats", .33], ["pb", 2], ["chia", 1]], pan: ["honey", "chips"], prep: "Mix, roll into 3 bites, chill. Make a batch for the whole stretch." },
+  { id: "eggs-grapes", n: "Hard-boiled eggs + grapes", slots: ["snack"], odor: 1, mic: 0, eat: 3, hand: 1, p: 12, d: "v df gf nf", i: [["eggs", 2], ["grapes", 3]], pan: ["saltpepper"], prep: "Peel at home. Eggs do have a mild smell." },
+  { id: "edamame-cup", n: "Sea salt edamame cup", slots: ["snack"], odor: 0, mic: 1, eat: 4, hand: 1, p: 12, d: "v df gf nf", i: [["edamame", 3]], pan: ["saltpepper"], prep: "Thaw overnight in the fridge. Good cold." },
+  { id: "trail-mix-pack", n: "Trail mix pack", slots: ["snack"], odor: 0, mic: 0, eat: 2, hand: 1, p: 6, d: "v gf", i: [["trailmix", 1.5]], pan: [], prep: "Portion into small bags for each shift." },
+  { id: "almonds-choc", n: "Almonds + dark chocolate", slots: ["snack"], odor: 0, mic: 0, eat: 2, hand: 1, p: 6, d: "v df gf", i: [["almonds", 1]], pan: ["chips"], prep: "A small handful plus a few chips." },
+  { id: "ricecake-pb", n: "Rice cake PB banana stack", slots: ["snack", "post"], odor: 0, mic: 0, eat: 3, hand: 1, p: 6, d: "v df gf", i: [["ricecakes", 2], ["pb", 1], ["banana", .5]], pan: [], prep: "Assemble right before eating so it stays crisp." },
+  { id: "protein-shake", n: "Protein shake", slots: ["snack"], odor: 0, mic: 0, eat: 2, hand: 1, p: 32, d: "v gf nf", i: [["protein", 1], ["milk", 1]], pan: [], prep: "Powder in a shaker bottle at home; add milk and shake on shift." },
+  { id: "overnight-oats", n: "Berry overnight oats", slots: ["snack", "pre"], odor: 0, mic: 0, eat: 5, hand: 0, p: 20, d: "v nf", i: [["oats", .5], ["milk", .5], ["yogurt", 2], ["chia", 1], ["berries", 2]], pan: ["honey"], prep: "Mix in a jar the night before. Eat cold." },
+  { id: "cheese-crackers-grapes", n: "Cheddar, crackers & grapes", slots: ["snack"], odor: 0, mic: 0, eat: 4, hand: 1, p: 9, d: "v nf", i: [["cheddar", 1], ["crackers", 1], ["grapes", 3]], pan: [], prep: "Slice cheese at home." },
+  { id: "egg-bites", n: "Spinach cheddar egg bites", slots: ["snack", "pre"], odor: 1, mic: 1, eat: 3, hand: 1, p: 16, d: "v gf nf", i: [["eggs", 2], ["spinach", .5], ["cheddar", .5]], pan: ["saltpepper"], prep: "Whisk, pour into a muffin tin, bake at 350°F for 20 minutes. Good cold." },
+  // ── Before shift (at home, so smell doesn't matter) ──
+  { id: "spinach-scramble-toast", n: "Spinach cheddar scramble + toast", slots: ["pre"], odor: 1, mic: 2, eat: 10, hand: 0, p: 30, d: "v nf", i: [["eggs", 3], ["spinach", 1], ["cheddar", .5], ["bread", 2]], pan: ["oil", "saltpepper"], prep: "Ten minutes in a pan." },
+  { id: "avocado-egg-toast", n: "Avocado toast + eggs", slots: ["pre"], odor: 1, mic: 2, eat: 8, hand: 0, p: 18, d: "v df nf", i: [["bread", 2], ["avocado", .5], ["eggs", 2], ["lemon", .25]], pan: ["saltpepper"], prep: "Toast, smash avocado with lemon, top with eggs." },
+  { id: "turkey-lettuce-burger", n: "Turkey burger lettuce wrap", slots: ["pre"], odor: 1, mic: 2, eat: 10, hand: 0, p: 30, d: "gf df nf", i: [["groundturkey", 4], ["greens", 1], ["avocado", .5], ["tomato", 1]], pan: ["saltpepper", "oil"], prep: "Form a patty, cook 5 minutes per side." },
+  { id: "chicken-sweet-potato-plate", n: "Chicken & sweet potato plate", slots: ["pre"], odor: 0, mic: 2, eat: 10, hand: 0, p: 38, d: "gf df nf", i: [["chicken", 4], ["sweetpotato", 1], ["spinach", 1]], pan: ["oil", "saltpepper"], prep: "Microwave the sweet potato 6–8 minutes. Wilt spinach alongside." },
+  { id: "big-parfait", n: "Big Greek yogurt parfait", slots: ["pre"], odor: 0, mic: 0, eat: 6, hand: 0, p: 22, d: "v nf", i: [["yogurt", 8], ["berries", 3], ["granola", .33]], pan: ["honey"], prep: "Layer and go." },
+  { id: "pb-banana-oatmeal", n: "Peanut butter banana oatmeal", slots: ["pre", "post"], odor: 0, mic: 2, eat: 7, hand: 0, p: 18, d: "v", i: [["oats", .5], ["milk", 1], ["pb", 1], ["banana", .5]], pan: ["cinnamon"], prep: "Microwave oats and milk 2 minutes; top with PB and banana." },
+  { id: "black-bean-quesadilla", n: "Black bean quesadilla", slots: ["pre"], odor: 1, mic: 2, eat: 8, hand: 1, p: 22, d: "v nf", i: [["tortilla", 2], ["blackbeans", .5], ["cheddar", 1], ["salsa", 2]], pan: ["oil"], prep: "Crisp in a pan 3 minutes per side." },
+  { id: "sweet-potato-hash", n: "Sweet potato black bean hash", slots: ["pre"], odor: 0, mic: 2, eat: 10, hand: 0, p: 14, d: "v df gf nf", i: [["sweetpotato", 1], ["blackbeans", .5], ["pepper", .5], ["avocado", .5]], pan: ["oil", "saltpepper"], prep: "Dice and pan-fry 12 minutes. Top with avocado." },
+  { id: "chicken-greens-plate", n: "Chicken, greens & avocado plate", slots: ["pre"], odor: 0, mic: 0, eat: 8, hand: 0, p: 34, d: "gf df nf", i: [["chicken", 4], ["greens", 1.5], ["avocado", .5], ["tomato", 2], ["cucumber", .5]], pan: ["oil", "vinegar", "saltpepper"], prep: "Big salad, no cooking." },
+  // ── After shift (light, sleep-friendly) ──
+  { id: "pb-banana-toast", n: "PB banana toast", slots: ["post"], odor: 0, mic: 0, eat: 4, hand: 1, p: 9, d: "v df", i: [["bread", 1], ["pb", 1], ["banana", .5]], pan: [], prep: "Small and easy before sleep." },
+  { id: "turkey-half-sandwich", n: "Turkey & cheese half sandwich", slots: ["post"], odor: 0, mic: 0, eat: 4, hand: 1, p: 18, d: "nf", i: [["bread", 1], ["turkey", 2], ["cheddar", .5]], pan: [], prep: "Half a sandwich keeps it light." },
+  { id: "fruit-ricecake", n: "Fruit cup + rice cake", slots: ["post", "snack"], odor: 0, mic: 0, eat: 3, hand: 1, p: 3, d: "v df gf nf", i: [["berries", 2], ["banana", .5], ["ricecakes", 1]], pan: [], prep: "Light and easy before sleep." },
+  { id: "cottage-cucumber", n: "Cottage cheese & cucumber cup", slots: ["post", "snack"], odor: 0, mic: 0, eat: 3, hand: 0, p: 18, d: "v gf nf", i: [["cottage", 6], ["cucumber", .5]], pan: ["saltpepper"], prep: "Salt, pepper, done." },
+  { id: "warm-milk-oats", n: "Small warm oats with banana", slots: ["post"], odor: 0, mic: 2, eat: 5, hand: 0, p: 10, d: "v nf", i: [["oats", .33], ["milk", .75], ["banana", .5]], pan: ["cinnamon"], prep: "Warm and light. Easy on the stomach before bed." }
+];

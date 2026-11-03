@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ScrubFuel</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Meal plans and one zero-waste grocery run built around your nursing shifts. Zero-odor, no-microwave and 7-minute meals, plus a caffeine and hydration plan.">
+<meta name="theme-color" content="#0e2a31">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ScrubFuel">
+<link rel="canonical" href="https://scrubfuel.com/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://scrubfuel.com/">
+<meta property="og:title" content="ScrubFuel: shift meals + one grocery run">
+<meta property="og:description" content="Pick your shifts. Get zero-odor, no-microwave, 7-minute meals and one zero-waste grocery list. Free, made for nurses.">
+<meta property="og:image" content="https://scrubfuel.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="/manifest.webmanifest">
+<script>window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__bip=e;});</script>
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,700;112,800;112,900&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="/" aria-label="ScrubFuel home">
+      <svg viewBox="0 0 64 24" aria-hidden="true"><polyline points="0,14 14,14 19,4 25,22 31,9 35,14 64,14" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      <b>Scrub<span>Fuel</span></b>
+    </a>
+    <button class="getapp" id="installBtn" type="button" hidden>📲 Get the app</button>
+  </header>
+
+  <section class="hero">
+    <h1>Shift meals. <mark>One grocery run.</mark> Nothing rots in the fridge.</h1>
+    <p>Tap your shifts, set your floor rules, and get a meal plan built for breakroom reality plus a single grocery list that uses up what you buy.</p>
+  </section>
+
+  <section class="step" aria-labelledby="s1">
+    <div class="stephead"><span class="num">1</span><h2 id="s1">Your shifts</h2><span class="hint" id="shiftCount">Tap a day: off → day → night</span></div>
+    <div class="days" id="days" role="group" aria-label="Next 7 days"></div>
+    <div class="setrow">
+      <div class="seg" role="radiogroup" aria-label="Shift length" id="lenSeg">
+        <button type="button" role="radio" data-len="8">8 hr</button><button type="button" role="radio" data-len="10">10 hr</button><button type="button" role="radio" data-len="12">12 hr</button>
+      </div>
+      <label class="timein">☀ Day starts <input type="time" id="dayStart" value="07:00"></label>
+      <label class="timein">☾ Night starts <input type="time" id="nightStart" value="19:00"></label>
+    </div>
+  </section>
+
+  <section class="step" aria-labelledby="s2">
+    <div class="stephead"><span class="num">2</span><h2 id="s2">Floor rules</h2></div>
+    <div class="rules">
+      <button class="rule" type="button" data-f="odor" aria-pressed="false"><b>🚫👃 Zero odor</b><span>No fish, garlic, eggs or strong spices on the unit</span></button>
+      <button class="rule" type="button" data-f="speed" aria-pressed="false"><b>⏱ Speed eat</b><span>Eat in 7 minutes or less, snacks one-handed</span></button>
+      <button class="rule" type="button" data-f="nomic" aria-pressed="false"><b>🧊 No microwave</b><span>Good cold, for when the line is 4 deep</span></button>
+      <button class="rule" type="button" data-f="hydro" aria-pressed="false"><b>💧 Hydration plan</b><span>Timed caffeine and electrolytes to beat the crash</span></button>
+    </div>
+    <div class="chips" role="group" aria-label="Diet">
+      <button class="chip" type="button" data-d="v" aria-pressed="false">Vegetarian</button>
+      <button class="chip" type="button" data-d="df" aria-pressed="false">Dairy-free</button>
+      <button class="chip" type="button" data-d="gf" aria-pressed="false">Gluten-free</button>
+      <button class="chip" type="button" data-d="nf" aria-pressed="false">Nut-free</button>
+    </div>
+    <div class="setrow">
+      <div class="seg" role="radiogroup" aria-label="Plan style" id="styleSeg">
+        <button type="button" role="radio" data-style="batch">Batch prep</button><button type="button" role="radio" data-style="mix">Mix it up</button>
+      </div>
+      <label class="switch"><input type="checkbox" id="postToggle"> After-shift snack</label>
+    </div>
+  </section>
+
+  <section class="plan" id="plan" aria-live="polite">
+    <div class="stephead"><span class="num">3</span><h2>Your plan</h2><button class="ghost" id="shuffleBtn" type="button">🔀 Shuffle</button></div>
+    <div class="stats" id="stats"></div>
+    <div class="tabs" id="shiftTabs" role="tablist" aria-label="Shifts"></div>
+    <div class="slots" id="slots"></div>
+    <div class="hydro" id="hydro"></div>
+  </section>
+
+  <section class="grocery" id="grocery" aria-labelledby="gh">
+    <div class="stephead"><span class="num">4</span><h2 id="gh">One-store grocery list</h2><span class="hint" id="listMeta"></span></div>
+    <div class="waste" id="waste"></div>
+    <div class="list" id="list"></div>
+    <div class="pantry" id="pantry"></div>
+    <div class="exports">
+      <button class="btn primary" id="instacartBtn" type="button" hidden>🛒 Send to Instacart</button>
+      <button class="btn" id="copyBtn" type="button">📋 Copy list</button>
+      <button class="btn" id="shareListBtn" type="button">📤 Share list</button>
+    </div>
+    <p class="note" id="exportNote">Copy the list into the Walmart or Instacart app search, or check items off as you shop.</p>
+  </section>
+
+  <section class="unit">
+    <h2>Send this plan to your unit</h2>
+    <p>Coworkers open the same plan with one tap, then tweak it for their own shifts.</p>
+    <button class="btn primary" id="sharePlanBtn" type="button">📨 Share my plan</button>
+  </section>
+
+  <footer>
+    <p>ScrubFuel is a planning tool, not medical or dietary advice. Check labels for allergens. Caffeine timing follows the common guideline of stopping about 6 hours before sleep. Prices are rough estimates.</p>
+    <p>scrubfuel.com · Made for the people who take care of everyone else.</p>
+  </footer>
+</div>
+
+<div class="sheetback" id="sheetBack" hidden></div>
+<div class="sheet" id="installSheet" hidden role="dialog" aria-modal="true" aria-labelledby="installTitle">
+  <div class="sheethead"><b id="installTitle">Put ScrubFuel on your home screen</b><button class="x" id="installClose" type="button" aria-label="Close">✕</button></div>
+  <div id="installSteps"></div>
+</div>
+<textarea id="copyArea" class="sr" aria-hidden="true" tabindex="-1"></textarea>
+
+<script type="module" src="/app.js"></script>
+</body>
+</html>
