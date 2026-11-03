@@ -22,7 +22,7 @@ const today = new Date(); today.setHours(0, 0, 0, 0);
 const TODAY = iso(today);
 const DEFAULT = { store: "walmart", anchor: TODAY, dates: {}, len: 12, dayStart: "07:00", nightStart: "19:00", f: { odor: true, speed: true, nomic: false, hydro: true }, diet: { v: false, df: false, gf: false, nf: false }, post: false, style: "mix", seed: 1, swaps: null, nope: [] };
 const saved = store.get("settings", null);
-const RETURNING = !!saved;
+const RETURNING = !!saved && saved.confirmed === true;   // only once they have set their own shifts (not the sample)
 let S = Object.assign(structuredClone(DEFAULT), saved || {});
 if (Array.isArray(S.week)) { S.anchor = TODAY; S.dates = {}; S.week.forEach((t, i) => { if (t !== "off") S.dates[iso(addDays(today, i))] = t; }); delete S.week; }
 if (!saved) { S.dates = { [TODAY]: "night", [iso(addDays(today, 1))]: "night", [iso(addDays(today, 2))]: "night" }; }
@@ -57,6 +57,7 @@ function cfg() {
   return { shifts, len: S.len, dayStart: S.dayStart, nightStart: S.nightStart, f: S.f, diet: S.diet, post: S.post, style: S.style, seed: S.seed, exclude: S.nope };
 }
 const save = () => store.set("settings", S);
+const confirmShifts = () => { S.confirmed = true; };
 
 /* ── step 1: shift strip ── */
 function renderDays() {
@@ -68,7 +69,7 @@ function renderDays() {
       <span class="ic">${t === "day" ? "☀" : t === "night" ? "☾" : ""}</span><span class="ty">${t === "off" ? "off" : t}</span></button>`;
   }).join("");
   const restart = S.anchor !== TODAY ? ` <button type="button" class="linkbtn" id="restartBtn">Start from today</button>` : "";
-  $("#shiftCount").innerHTML = (n ? `${n} shift${n > 1 ? "s" : ""} · max ${MAX}` : "Tap a day: off → day → night") + restart;
+  $("#shiftCount").innerHTML = (!S.confirmed && n ? "Sample shown. Tap days to set yours." : n ? `${n} shift${n > 1 ? "s" : ""} · max ${MAX}` : "Tap a day: off → day → night") + restart;
 }
 $("#days").addEventListener("click", e => {
   const b = e.target.closest(".day"); if (!b) return;
@@ -76,19 +77,19 @@ $("#days").addEventListener("click", e => {
   const next = cur === "off" ? "day" : cur === "day" ? "night" : "off";
   if (cur === "off" && n >= MAX) { toast(`Up to ${MAX} shifts per plan`); return; }
   if (next === "off") delete S.dates[k]; else S.dates[k] = next;
-  save(); renderDays(); regen();
+  confirmShifts(); save(); renderDays(); regen();
 });
 $("#shiftCount").addEventListener("click", e => {
   if (!e.target.closest("#restartBtn")) return;
   const keep = {}; DAYS.forEach(d => { if (d >= today && S.dates[iso(d)]) keep[iso(d)] = S.dates[iso(d)]; });
-  S.anchor = TODAY; S.dates = keep; S.swaps = null; setDays(); save(); renderDays(); regen(); toast("Week now starts today");
+  S.anchor = TODAY; S.dates = keep; S.swaps = null; setDays(); confirmShifts(); save(); renderDays(); regen(); toast("Week now starts today");
 });
 
 function setSeg(sel, attr, val) { $$(`${sel} button`).forEach(b => b.setAttribute("aria-checked", String(b.dataset[attr] == val))); }
-$("#lenSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.len = +b.dataset.len; setSeg("#lenSeg", "len", S.len); save(); regen(); });
+$("#lenSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.len = +b.dataset.len; setSeg("#lenSeg", "len", S.len); confirmShifts(); save(); regen(); });
 $("#styleSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.style = b.dataset.style; setSeg("#styleSeg", "style", S.style); save(); regen(); });
-$("#dayStart").addEventListener("change", e => { S.dayStart = e.target.value || "07:00"; save(); regen(); });
-$("#nightStart").addEventListener("change", e => { S.nightStart = e.target.value || "19:00"; save(); regen(); });
+$("#dayStart").addEventListener("change", e => { S.dayStart = e.target.value || "07:00"; confirmShifts(); save(); regen(); });
+$("#nightStart").addEventListener("change", e => { S.nightStart = e.target.value || "19:00"; confirmShifts(); save(); regen(); });
 $$(".rule").forEach(b => b.addEventListener("click", () => { const k = b.dataset.f; S.f[k] = !S.f[k]; b.setAttribute("aria-pressed", String(S.f[k])); save(); k === "hydro" ? renderPlan() : regen(); }));
 $$(".chip").forEach(b => b.addEventListener("click", () => { const k = b.dataset.d; S.diet[k] = !S.diet[k]; b.setAttribute("aria-pressed", String(S.diet[k])); save(); regen(); }));
 $("#postToggle").addEventListener("change", e => { S.post = e.target.checked; save(); regen(); });
@@ -124,7 +125,7 @@ function regen() {
     let changed = false;
     for (const k in S.swaps.map) { const r = RECIPES.find(x => x.id === S.swaps.map[k]); if (r && picks[k] !== undefined) { picks[k] = r; changed = true; } }
     if (changed) plan = finalizePlan(c, picks);
-  } else if (S.swaps) { S.swaps = null; save(); }
+  } else if (S.swaps) { S.swaps = null; store.set("settings", S); }
   if (activeShift >= c.shifts.length) activeShift = 0;
   renderPlan();
 }
@@ -177,7 +178,7 @@ $("#slots").addEventListener("click", e => {
   do { i = (i + 1) % pool.length; next = pool[i]; tries++; } while ((next === picks[k] || sameShift.has(next.id)) && tries < pool.length);
   picks[k] = next; plan = finalizePlan(plan.cfg, picks);
   const sig = sigOf(plan.cfg); if (!S.swaps || S.swaps.sig !== sig) S.swaps = { sig, map: {} };
-  S.swaps.map[k] = next.id; save(); renderPlan();
+  S.swaps.map[k] = next.id; confirmShifts(); save(); renderPlan();
 });
 
 /* Recipe popup */
@@ -219,7 +220,7 @@ function renderSetupBar() {
   const nights = c.shifts.filter(s => s.type === "night").length, days = c.shifts.length - nights;
   const parts = [nights && `${nights} night${nights > 1 ? "s" : ""}`, days && `${days} day${days > 1 ? "s" : ""}`].filter(Boolean).join(" + ") || "No shifts yet";
   const rules = [S.f.odor && "zero odor", S.f.speed && "7-min", S.f.nomic && "no microwave"].filter(Boolean).join(", ");
-  bar.innerHTML = `<span><b>${parts}</b> · ${S.len} hr${rules ? ` · ${rules}` : ""}</span><span class="edit">${setupOpen ? "Done ▴" : "Edit ▾"}</span>`;
+  bar.innerHTML = `<span><b>${parts}</b> · ${S.len} hr${rules ? ` · ${rules}` : ""}</span><span class="edit">${setupOpen ? "Done" : "Change shifts"}</span>`;
   bar.hidden = !RETURNING; bar.setAttribute("aria-expanded", String(setupOpen));
   $("#setup").hidden = !setupOpen; $("#hero").hidden = RETURNING;
 }
@@ -243,7 +244,7 @@ function renderToday() {
   }
   if (idx < 0) {
     el.hidden = false;
-    el.innerHTML = `<div class="tdhead"><span class="tdtag">Stretch done</span><h2>Stretch complete. Rest well.</h2></div><p class="tdsub">No more shifts in this plan. Tap <b>Edit</b> to set up your next stretch.</p>`;
+    el.innerHTML = `<div class="tdhead"><div class="tdrow"><span class="tdtag">Stretch done</span><button type="button" class="tdedit" id="tdEdit">Plan next shifts</button></div><h2>Stretch complete. Rest well.</h2></div><p class="tdsub">No more shifts in this plan. Tap <b>Edit</b> to set up your next stretch.</p>`;
     return;
   }
   const sh = c.shifts[idx], w = shiftWindow(sh, c), packed = store.get("packed", {}), pk = packed[sh.date] || {};
@@ -260,7 +261,7 @@ function renderToday() {
   }
   const done = bag.filter(it => pk[it.k]).length;
   el.hidden = false;
-  el.innerHTML = `<div class="tdhead"><span class="tdtag">${tag}</span><h2>${title}</h2></div>
+  el.innerHTML = `<div class="tdhead"><div class="tdrow"><span class="tdtag">${tag}</span><button type="button" class="tdedit" id="tdEdit">Change shifts</button></div><h2>${title}</h2><p class="tdwhat">What to eat and pack for this shift.</p></div>
     ${next}
     ${pre && mode !== "on" ? `<p class="tdsub">Eat before you go: <button type="button" class="linkbtn" data-r="${pre.k}">${esc(pre.recipe.n)}</button></p>` : ""}
     <div class="bag"><div class="baghead"><b>${mode === "on" ? "In your bag" : "Pack your bag"}</b><span>${done}/${bag.length} packed · ≈ ${prot} g protein</span></div>
@@ -268,6 +269,7 @@ function renderToday() {
     <p class="tdsub tdrem">${S.remind && S.remind.on ? "Reminders are on for this stretch." : `<button type="button" class="linkbtn" id="tdRemind">Turn on reminders</button> and you won't have to remember any of this.`}</p>`;
 }
 $("#today").addEventListener("click", e => {
+  if (e.target.closest("#tdEdit")) { setupOpen = true; renderSetupBar(); $("#setup").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
   if (e.target.closest("#tdRemind")) { $("#remind").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
   const b = e.target.closest("[data-r]"); if (b) openRecipe(+b.dataset.r);
 });
@@ -508,7 +510,7 @@ $("#remindToggle").addEventListener("click", async () => {
   if (PREVIEW || !pushSupported()) { renderRemind(); if (IOS && !standalone) openSheet(); else toast("Notifications aren't available in this browser"); return; }
   const perm = await Notification.requestPermission();
   if (perm !== "granted") { $("#remindNote").textContent = "Notifications are blocked for ScrubFuel. Allow them in your phone or browser settings, then try again."; return; }
-  R.on = true; save(); renderRemind(); renderToday(); lastSync = ""; await syncRemind(true);
+  R.on = true; confirmShifts(); save(); renderRemind(); renderToday(); lastSync = ""; await syncRemind(true);
   if (S.remind.on) toast("Reminders on. Check for a test notification.");
 });
 $("#remindList").addEventListener("change", e => { const k = e.target.dataset.rk; if (!k) return; S.remind[k] = e.target.checked; save(); renderRemind(); scheduleSync(); });
@@ -547,8 +549,8 @@ if (!PREVIEW && "serviceWorker" in navigator) window.addEventListener("load", ()
 
 /* ── boot ── */
 syncControls(); renderDays(); regen(); checkInstacart();
-if (fromShare) { save(); toast("Opened a shared plan. Edit it for your shifts."); }
+if (fromShare) { confirmShifts(); save(); toast("Opened a shared plan. Edit it for your shifts."); }
 else if (newWeek) { save(); setupOpen = true; renderSetupBar(); toast("New week! Tap your next shifts."); }
-else if (!RETURNING) save();
+else if (!saved) store.set("settings", S);
 setInterval(() => { if (plan && document.visibilityState === "visible") renderToday(); }, 60000);
 if (HOST.endsWith(".test")) window.__sf = { remindEvents: () => { S.remind = { ...S.remind, pack: true, caf: true, dip: true, prep: true, next: true }; return remindEvents(); } };
