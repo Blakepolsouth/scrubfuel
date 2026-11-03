@@ -20,7 +20,7 @@ const fromIso = s => { const [y, m, d] = s.split("-").map(Number); return new Da
 const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 const today = new Date(); today.setHours(0, 0, 0, 0);
 const TODAY = iso(today);
-const DEFAULT = { store: "publix", anchor: TODAY, dates: {}, len: 12, dayStart: "07:00", nightStart: "19:00", f: { odor: true, speed: true, nomic: false, hydro: true }, diet: { v: false, df: false, gf: false, nf: false }, post: false, style: "mix", seed: 1, swaps: null, nope: [] };
+const DEFAULT = { store: "walmart", anchor: TODAY, dates: {}, len: 12, dayStart: "07:00", nightStart: "19:00", f: { odor: true, speed: true, nomic: false, hydro: true }, diet: { v: false, df: false, gf: false, nf: false }, post: false, style: "mix", seed: 1, swaps: null, nope: [] };
 const saved = store.get("settings", null);
 const RETURNING = !!saved;
 let S = Object.assign(structuredClone(DEFAULT), saved || {});

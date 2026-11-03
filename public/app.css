@@ -184,7 +184,14 @@ h1,h2,h3,h4{font-family:var(--f-head);font-weight:600;font-variation-settings:"S
 .waste p{margin:0;font-size:14px;color:var(--muted)}
 .waste p b{color:var(--ink)}
 .waste ul{margin:0;padding-left:18px;font-size:13.5px;color:var(--muted)}
-.storepick{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.storepick{display:flex;flex-direction:column;gap:10px}
+.storepick .sq{font-weight:700;font-size:15px}
+.storeseg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.storeseg button{display:flex;flex-direction:column;align-items:center;gap:1px;border:1px solid var(--line);background:transparent;border-radius:12px;padding:10px 4px;color:var(--muted)}
+.storeseg b{font-size:15px;color:var(--ink)}
+.storeseg small{font-size:12px}
+.storeseg button[aria-checked="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.storeseg button[aria-checked="true"] b{color:var(--accent)}
 .list{display:flex;flex-direction:column;gap:14px}
 .dept h3{font-family:var(--f-body);font-size:13px;font-weight:700;color:var(--muted);letter-spacing:0;margin-bottom:2px}
 .itemrow{display:grid;grid-template-columns:minmax(0,1fr);align-items:center;border-top:1px solid var(--line)}
