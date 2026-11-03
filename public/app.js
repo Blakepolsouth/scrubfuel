@@ -130,10 +130,10 @@ function regen() {
 }
 
 function badges(r, slot) {
-  const b = [`<span class="badge p">${r.p} g protein</span>`, `<span class="badge">⏱ ${r.eat} min</span>`];
-  if (r.odor === 0) b.push(`<span class="badge">No odor</span>`); else if (r.odor === 2) b.push(`<span class="badge warn">Strong smell</span>`);
-  if (r.mic === 0) b.push(`<span class="badge">🧊 Eat cold</span>`); else if (r.mic === 1) b.push(`<span class="badge">Good cold or warm</span>`); else b.push(`<span class="badge warn">Needs microwave</span>`);
-  if (r.hand) b.push(`<span class="badge">One hand</span>`);
+  const b = [`<span class="badge p">${r.p} g protein</span>`, `<span class="badge">${r.eat} min</span>`];
+  if (r.odor === 0) b.push(`<span class="badge">no odor</span>`); else if (r.odor === 2) b.push(`<span class="badge warn">strong smell</span>`);
+  if (r.mic === 0) b.push(`<span class="badge">eat cold</span>`); else if (r.mic === 1) b.push(`<span class="badge">cold or warm</span>`); else b.push(`<span class="badge warn">needs microwave</span>`);
+  if (r.hand) b.push(`<span class="badge">one hand</span>`);
   return b.join("");
 }
 
@@ -154,12 +154,11 @@ function renderPlan() {
   $("#slots").innerHTML = `<p class="protline"><b>≈ ${prot} g protein</b> this shift, including ${snackP} g from protein snacks.</p>` + items.map(it => {
     const r = it.recipe;
     if (!r) return `<div class="slot empty"><div class="when">${SLOT_NAMES[it.slot]}</div><h3>No meal fits every rule here. Try turning off a diet filter.</h3></div>`;
-    const share = it.shares && it.shares.length ? it.shares.map(s => `<p class="share">♻ <b>Shared ${esc(s.name)}</b> with ${esc(s.with.join(" and "))}, so none goes to waste.</p>`).join("") : "";
-    const relax = it.relaxed && it.relaxed.length ? `<p class="share">ℹ Not enough options fit every rule, so this one relaxes: ${esc(it.relaxed.join(", "))}.</p>` : "";
+    const relax = it.relaxed && it.relaxed.length ? `<p class="share">Not enough options fit every rule, so this one relaxes: ${esc(it.relaxed.join(", "))}.</p>` : "";
     return `<article class="slot"><div class="when">${SLOT_NAMES[it.slot]} · ${slotTime(it, c)}</div>
-      <h3>${esc(r.n)}</h3><button type="button" class="swap" data-k="${it.k}" aria-label="Swap ${esc(r.n)}">↻ Swap</button>
-      <div class="badges">${badges(r, it.slot)}</div><p class="prep">${esc(r.prep)}</p>${share}${relax}
-      <button type="button" class="howto" data-k="${it.k}">📖 Recipe & how to make it</button></article>`;
+      <h3>${esc(r.n)}</h3><button type="button" class="swap" data-k="${it.k}" aria-label="Swap ${esc(r.n)}">Swap</button>
+      <div class="badges">${badges(r, it.slot)}</div>${relax}
+      <button type="button" class="howto" data-k="${it.k}">Recipe & steps →</button></article>`;
   }).join("");
   renderHydro();
   renderPrep();
@@ -196,7 +195,7 @@ function openRecipe(k) {
     <h4>How to make it</h4>
     <ol class="steps">${steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>
     <p class="tip"><b>Packing tip:</b> ${esc(r.prep)}</p>
-    ${it.shares && it.shares.length ? `<p class="tip">♻ Uses the same ${esc(it.shares.map(s => s.name).join(" and "))} as ${esc([...new Set(it.shares.flatMap(s => s.with))].slice(0, 2).join(" and "))}.</p>` : ""}`;
+    ${it.shares && it.shares.length ? `<p class="tip">Uses the same ${esc(it.shares.map(s => s.name).join(" and "))} as ${esc([...new Set(it.shares.flatMap(s => s.with))].slice(0, 2).join(" and "))}.</p>` : ""}`;
   $("#sheetBack").hidden = $("#recipeSheet").hidden = false;
   $("#recipeSheet").scrollTop = 0; $("#recipeClose").focus();
 }
@@ -244,7 +243,7 @@ function renderToday() {
   }
   if (idx < 0) {
     el.hidden = false;
-    el.innerHTML = `<div class="tdhead"><span class="tdtag">Stretch done</span><h2>You made it. 🎉</h2></div><p class="tdsub">No more shifts in this plan. Tap <b>Edit</b> to set up your next stretch.</p>`;
+    el.innerHTML = `<div class="tdhead"><span class="tdtag">Stretch done</span><h2>Stretch complete. Rest well.</h2></div><p class="tdsub">No more shifts in this plan. Tap <b>Edit</b> to set up your next stretch.</p>`;
     return;
   }
   const sh = c.shifts[idx], w = shiftWindow(sh, c), packed = store.get("packed", {}), pk = packed[sh.date] || {};
@@ -265,8 +264,8 @@ function renderToday() {
     ${next}
     ${pre && mode !== "on" ? `<p class="tdsub">Eat before you go: <button type="button" class="linkbtn" data-r="${pre.k}">${esc(pre.recipe.n)}</button></p>` : ""}
     <div class="bag"><div class="baghead"><b>${mode === "on" ? "In your bag" : "Pack your bag"}</b><span>${done}/${bag.length} packed · ≈ ${prot} g protein</span></div>
-    ${bag.map(it => `<div class="bagrow"><label><input type="checkbox" data-pack="${it.k}" data-date="${sh.date}"${pk[it.k] ? " checked" : ""}><span><small>${it.slot === "meal" ? "Meal" : "Protein snack"}</small>${esc(it.recipe.n)}</span></label><button type="button" class="howmini" data-r="${it.k}" aria-label="How to make ${esc(it.recipe.n)}">📖</button></div>`).join("")}</div>
-    <p class="tdsub tdrem">${S.remind && S.remind.on ? "🔔 Reminders are on for this stretch." : `🔕 <button type="button" class="linkbtn" id="tdRemind">Turn on shift reminders</button> so you don't have to remember.`}</p>`;
+    ${bag.map(it => `<div class="bagrow"><label><input type="checkbox" data-pack="${it.k}" data-date="${sh.date}"${pk[it.k] ? " checked" : ""}><span><small>${it.slot === "meal" ? "Meal" : "Protein snack"}</small>${esc(it.recipe.n)}</span></label><button type="button" class="howmini" data-r="${it.k}" aria-label="How to make ${esc(it.recipe.n)}">Recipe</button></div>`).join("")}</div>
+    <p class="tdsub tdrem">${S.remind && S.remind.on ? "Reminders are on for this stretch." : `<button type="button" class="linkbtn" id="tdRemind">Turn on reminders</button> and you won't have to remember any of this.`}</p>`;
 }
 $("#today").addEventListener("click", e => {
   if (e.target.closest("#tdRemind")) { $("#remind").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
@@ -315,7 +314,7 @@ function renderHydro() {
   if (!S.f.hydro) { el.innerHTML = ""; el.hidden = true; return; }
   el.hidden = false;
   const c = plan.cfg, sh = c.shifts[activeShift], h = hydration(sh.type, sh.type === "night" ? c.nightStart : c.dayStart, c.len);
-  el.innerHTML = `<h3>💧 ${esc(sh.label)} caffeine & hydration</h3>
+  el.innerHTML = `<h3>${esc(sh.label)}: caffeine & water</h3>
     <p class="sub">Shift ${h.start} to ${h.end}. Planned sleep around ${h.sleep}, so the caffeine cutoff is about ${h.cutoff}.</p>
     <div class="tl">${h.events.map(e => `<div class="ev" data-k="${e.k}"><time>${e.time}</time><div><b>${esc(e.t)}</b><span>${esc(e.d)}</span></div></div>`).join("")}</div>`;
 }
@@ -333,12 +332,12 @@ function renderGrocery() {
   g.rows.forEach(r => (by[r.dept] = by[r.dept] || []).push(r));
   $("#list").innerHTML = DEPT_ORDER.filter(d => by[d]).map(d => `<div class="dept"><h3>${d}</h3>${by[d].map(r => `
     <div class="itemrow${st ? " shop" : ""}"><label class="item${done[r.key] ? " done" : ""}"><input type="checkbox" data-key="${r.key}"${done[r.key] ? " checked" : ""}>
-      <span class="nm">${esc(r.name)}${r.uses ? `<small>${esc(r.uses)}${r.left ? ` · ${esc(r.left)} left` : ""}</small>` : ""}</span><span class="q">${esc(r.buy)}</span></label>
-      ${st ? `<a class="find" href="${st.search(r.instacart.name)}" target="_blank" rel="noopener" aria-label="Find ${esc(r.name)} at ${st.name}">🔍</a>` : ""}</div>`).join("")}</div>`).join("");
+      <span class="nm">${esc(r.name.replace(/ \(.*\)/, ""))}${r.uses ? `<small>${esc(r.uses)}${r.left ? ` · ${esc(r.left)} left` : ""}</small>` : ""}</span><span class="q">${esc(r.buy)}</span></label>
+      ${st ? `<a class="find" href="${st.search(r.instacart.name)}" target="_blank" rel="noopener" aria-label="Find ${esc(r.name)} at ${st.name}">Find</a>` : ""}</div>`).join("")}</div>`).join("");
   const s2 = STORES[S.store];
   $("#openStore").hidden = !s2;
-  if (s2) $("#openStore").textContent = S.store === "walmart" ? "🛒 Add everything to my Walmart cart" : `🛒 Open ${s2.name}`;
-  $("#exportNote").textContent = S.store === "walmart" ? "One tap puts the whole list in your Walmart cart for pickup or delivery. If something's out of stock at your store, Walmart offers a replacement." : s2 ? `Tap 🔍 next to any item to find it at ${s2.name}, then add it to your cart. "Open ${s2.name}" also copies your full list.` : "Copy or share the list, or check items off here as you shop.";
+  if (s2) $("#openStore").textContent = S.store === "walmart" ? "Add everything to my Walmart cart" : `Open ${s2.name}`;
+  $("#exportNote").textContent = S.store === "walmart" ? "One tap puts the whole list in your Walmart cart for pickup or delivery. If something's out of stock at your store, Walmart offers a replacement." : s2 ? `Tap Find next to any item to find it at ${s2.name}, then add it to your cart. "Open ${s2.name}" also copies your full list.` : "Copy or share the list, or check items off here as you shop.";
   renderAmazon();
   $("#pantry").innerHTML = g.pantry.length ? `<b>Check your pantry:</b> ${g.pantry.map(esc).join(", ")}` : "";
 }
@@ -400,7 +399,7 @@ function amazonKeys() {
 }
 function renderAmazon() {
   const keys = amazonKeys();
-  $("#amazon").innerHTML = `<div class="azhead"><b>📦 Stock your locker</b><span>Shelf-stable protein, shipped to your door</span></div>
+  $("#amazon").innerHTML = `<div class="azhead"><b>Stock your locker</b><span>Shelf-stable protein, shipped to your door</span></div>
     <ul>${keys.map(k => `<li><span>${esc(AMAZON[k].name)}</span><small>${esc(AMAZON[k].pack)}</small></li>`).join("")}</ul>
     <button class="btn" id="amazonBtn" type="button">Add these to my Amazon cart</button>
     <p class="note">Multipacks last a few weeks. If you order these, skip them on your grocery run.${AMAZON_TAG ? " ScrubFuel may earn a small commission." : ""}</p>`;
@@ -433,16 +432,16 @@ $("#instacartBtn").addEventListener("click", async () => {
     if (!r.ok || !j.url) throw new Error(j.error || "failed");
     if (win) win.location.href = j.url; else location.href = j.url;
   } catch (e) { if (win) win.close(); toast("Instacart didn't respond. Copy the list instead."); }
-  btn.disabled = false; btn.textContent = "🛒 Send to Instacart";
+  btn.disabled = false; btn.textContent = "Send to Instacart";
 });
 
 /* ── Shift reminders (web push). The phone works out the times; the server just delivers them. ── */
 const RTYPES = [
-  ["pack", "🎒 Pack your bag", "75 min before each shift, with your meal and snacks"],
-  ["caf", "☕ Last call for caffeine", "6 hours before your planned sleep"],
-  ["dip", "⚡ Protein snack at the slump", "3 AM dip on nights, afternoon slump on days"],
-  ["prep", "🔪 Prep night", "The evening before your stretch starts"],
-  ["next", "🗓 Plan your next stretch", "The day after your last shift"]
+  ["pack", "Pack your bag", "75 min before each shift, with your meal and snacks"],
+  ["caf", "Last call for caffeine", "6 hours before your planned sleep"],
+  ["dip", "Protein snack at the slump", "3 AM dip on nights, afternoon slump on days"],
+  ["prep", "Prep night", "The evening before your stretch starts"],
+  ["next", "Plan your next stretch", "The day after your last shift"]
 ];
 if (!S.remind) S.remind = { on: false, pack: true, caf: true, dip: true, prep: true, next: true };
 const pushSupported = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;

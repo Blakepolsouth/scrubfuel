@@ -6,7 +6,8 @@
 <title>ScrubFuel</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Meal plans and one zero-waste grocery run built around your nursing shifts. Zero-odor, no-microwave and 7-minute meals, plus a caffeine and hydration plan.">
-<meta name="theme-color" content="#0e2a31">
+<meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121816" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ScrubFuel">
@@ -23,7 +24,7 @@
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,700;112,800;112,900&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fraunces:opsz,wght,SOFT@9..144,500..700,0..100&display=swap">
 <link rel="stylesheet" href="/app.css">
 </head>
 <body>
@@ -33,7 +34,7 @@
       <svg viewBox="0 0 64 24" aria-hidden="true"><polyline points="0,14 14,14 19,4 25,22 31,9 35,14 64,14" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg>
       <b>Scrub<span>Fuel</span></b>
     </a>
-    <button class="getapp" id="installBtn" type="button" hidden>📲 Get the app</button>
+    <button class="getapp" id="installBtn" type="button" hidden>Get the app</button>
   </header>
 
   <section class="today" id="today" hidden aria-live="polite"></section>
@@ -41,8 +42,8 @@
   <button class="setupbar" id="setupBar" type="button" hidden aria-expanded="false" aria-controls="setup"></button>
 
   <section class="hero" id="hero">
-    <h1>Shift meals. <mark>One grocery run.</mark> Nothing rots in the fridge.</h1>
-    <p>Tap your shifts, set your floor rules, and get a meal plan built for breakroom reality plus a single grocery list that uses up what you buy.</p>
+    <h1>Shift meals, sorted. <mark>One grocery run</mark> for the whole stretch.</h1>
+    <p>Tap your shifts and get simple, high-protein meals that work on the floor, plus one grocery list that uses up everything you buy.</p>
   </section>
 
   <div id="setup">
@@ -53,18 +54,18 @@
       <div class="seg" role="radiogroup" aria-label="Shift length" id="lenSeg">
         <button type="button" role="radio" data-len="8">8 hr</button><button type="button" role="radio" data-len="10">10 hr</button><button type="button" role="radio" data-len="12">12 hr</button>
       </div>
-      <label class="timein">☀ Day starts <input type="time" id="dayStart" value="07:00"></label>
-      <label class="timein">☾ Night starts <input type="time" id="nightStart" value="19:00"></label>
+      <label class="timein">Day starts <input type="time" id="dayStart" value="07:00"></label>
+      <label class="timein">Night starts <input type="time" id="nightStart" value="19:00"></label>
     </div>
   </section>
 
   <section class="step" aria-labelledby="s2">
     <div class="stephead"><span class="num">2</span><h2 id="s2">Floor rules</h2></div>
     <div class="rules">
-      <button class="rule" type="button" data-f="odor" aria-pressed="false"><b>🚫👃 Zero odor</b><span>No fish, garlic, eggs or strong spices on the unit</span></button>
-      <button class="rule" type="button" data-f="speed" aria-pressed="false"><b>⏱ Speed eat</b><span>Eat in 7 minutes or less, snacks one-handed</span></button>
-      <button class="rule" type="button" data-f="nomic" aria-pressed="false"><b>🧊 No microwave</b><span>Good cold, for when the line is 4 deep</span></button>
-      <button class="rule" type="button" data-f="hydro" aria-pressed="false"><b>💧 Hydration plan</b><span>Timed caffeine and electrolytes to beat the crash</span></button>
+      <button class="rule" type="button" data-f="odor" aria-pressed="false"><b>Zero odor</b><span>No fish, garlic, eggs or strong spices on the unit</span></button>
+      <button class="rule" type="button" data-f="speed" aria-pressed="false"><b>Speed eat</b><span>Eat in 7 minutes or less, snacks one-handed</span></button>
+      <button class="rule" type="button" data-f="nomic" aria-pressed="false"><b>No microwave</b><span>Good cold, for when the line is 4 deep</span></button>
+      <button class="rule" type="button" data-f="hydro" aria-pressed="false"><b>Hydration plan</b><span>Timed caffeine and electrolytes to beat the crash</span></button>
     </div>
     <div class="chips" role="group" aria-label="Diet">
       <button class="chip" type="button" data-d="v" aria-pressed="false">Vegetarian</button>
@@ -83,7 +84,7 @@
   </div>
 
   <section class="plan" id="plan" aria-live="polite">
-    <div class="stephead"><span class="num">3</span><h2>Your plan</h2><button class="ghost" id="shuffleBtn" type="button">🔀 Shuffle</button></div>
+    <div class="stephead"><h2>Your plan</h2><button class="ghost" id="shuffleBtn" type="button">Shuffle</button></div>
     <div class="stats" id="stats"></div>
     <div class="tabs" id="shiftTabs" role="tablist" aria-label="Shifts"></div>
     <div class="slots" id="slots"></div>
@@ -91,19 +92,19 @@
   </section>
 
   <section class="remind" id="remind" aria-labelledby="rh">
-    <div class="rmhead"><div><h2 id="rh">🔔 Shift reminders</h2><p id="remindSub">A nudge at the moments that matter, so you don't have to remember.</p></div>
+    <div class="rmhead"><div><h2 id="rh">Shift reminders</h2><p id="remindSub">A nudge at the moments that matter, so you don't have to remember.</p></div>
       <button type="button" class="toggle" id="remindToggle" role="switch" aria-checked="false" aria-labelledby="rh"><span></span></button></div>
     <div class="rmlist" id="remindList"></div>
     <p class="note" id="remindNote"></p>
   </section>
 
   <section class="prepday" id="prepday" aria-labelledby="ph">
-    <div class="stephead"><span class="num">✓</span><h2 id="ph">Prep day checklist</h2><span class="hint" id="prepMeta"></span></div>
+    <div class="stephead"><h2 id="ph">Prep day checklist</h2><span class="hint" id="prepMeta"></span></div>
     <ul class="preplist" id="prepList"></ul>
   </section>
 
   <section class="grocery" id="grocery" aria-labelledby="gh">
-    <div class="stephead"><span class="num">4</span><h2 id="gh">One-store grocery list</h2><span class="hint" id="listMeta"></span></div>
+    <div class="stephead"><h2 id="gh">One-store grocery list</h2><span class="hint" id="listMeta"></span></div>
     <div class="waste" id="waste"></div>
     <div class="storepick">
       <span>Shopping at</span>
@@ -114,19 +115,19 @@
     <div class="list" id="list"></div>
     <div class="pantry" id="pantry"></div>
     <div class="exports">
-      <button class="btn primary" id="instacartBtn" type="button" hidden>🛒 Send to Instacart</button>
-      <button class="btn primary" id="openStore" type="button">🛒 Open Publix</button>
-      <button class="btn" id="copyBtn" type="button">📋 Copy list</button>
-      <button class="btn" id="shareListBtn" type="button">📤 Share list</button>
+      <button class="btn primary" id="instacartBtn" type="button" hidden>Send to Instacart</button>
+      <button class="btn primary" id="openStore" type="button">Open Publix</button>
+      <button class="btn" id="copyBtn" type="button">Copy list</button>
+      <button class="btn" id="shareListBtn" type="button">Share list</button>
     </div>
     <p class="note" id="exportNote"></p>
     <div class="amazon" id="amazon"></div>
   </section>
 
   <section class="unit">
-    <h2>Send this plan to your unit</h2>
+    <h2>Share with your unit</h2>
     <p>Coworkers open the same plan with one tap, then tweak it for their own shifts.</p>
-    <button class="btn primary" id="sharePlanBtn" type="button">📨 Share my plan</button>
+    <button class="btn primary" id="sharePlanBtn" type="button">Share my plan</button>
   </section>
 
   <footer>
@@ -143,7 +144,7 @@
 <div class="sheet recipe" id="recipeSheet" hidden role="dialog" aria-modal="true" aria-labelledby="recipeTitle">
   <div class="sheethead"><b id="recipeTitle">Recipe</b><button class="x" id="recipeClose" type="button" aria-label="Close recipe">✕</button></div>
   <div id="recipeBody"></div>
-  <button class="nope" id="nopeBtn" type="button">👎 Not for me. Never suggest this again.</button>
+  <button class="nope" id="nopeBtn" type="button">Not for me. Don’t suggest this again.</button>
 </div>
 <textarea id="copyArea" class="sr" aria-hidden="true" tabindex="-1"></textarea>
 
