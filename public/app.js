@@ -1,3 +1,5 @@
+import { CATALOG, PANTRY } from "./food.js";
+import { STEPS } from "./steps.js";
 import { SLOT_NAMES, DEPT_ORDER, buildPlan, finalizePlan, poolForSlot, hydration, encodeCfg, decodeCfg, fmtQty } from "./planner.js";
 
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
@@ -114,20 +116,23 @@ function renderPlan() {
     <div class="stat"><b>$${Math.round(g.checkout)}</b><span>one-trip checkout</span></div>`;
   $("#shiftTabs").innerHTML = c.shifts.map((s, i) => `<button type="button" class="tab" role="tab" data-i="${i}" aria-selected="${i === activeShift}">${s.type === "night" ? "☾" : "☀"} ${s.label}</button>`).join("");
   const items = plan.items.map((it, k) => ({ ...it, k })).filter(it => it.shift === activeShift);
-  $("#slots").innerHTML = items.map(it => {
+  const prot = items.reduce((t, it) => t + (it.recipe ? it.recipe.p : 0), 0), snackP = items.filter(it => it.slot === "snack" && it.recipe).reduce((t, it) => t + it.recipe.p, 0);
+  $("#slots").innerHTML = `<p class="protline"><b>≈ ${prot} g protein</b> this shift, including ${snackP} g from protein snacks.</p>` + items.map(it => {
     const r = it.recipe;
     if (!r) return `<div class="slot empty"><div class="when">${SLOT_NAMES[it.slot]}</div><h3>No meal fits every rule here. Try turning off a diet filter.</h3></div>`;
     const share = it.shares && it.shares.length ? it.shares.map(s => `<p class="share">♻ <b>Shared ${esc(s.name)}</b> with ${esc(s.with.join(" and "))}, so none goes to waste.</p>`).join("") : "";
     const relax = it.relaxed && it.relaxed.length ? `<p class="share">ℹ Not enough options fit every rule, so this one relaxes: ${esc(it.relaxed.join(", "))}.</p>` : "";
     return `<article class="slot"><div class="when">${SLOT_NAMES[it.slot]} · ${slotTime(it, c)}</div>
       <h3>${esc(r.n)}</h3><button type="button" class="swap" data-k="${it.k}" aria-label="Swap ${esc(r.n)}">↻ Swap</button>
-      <div class="badges">${badges(r, it.slot)}</div><p class="prep">${esc(r.prep)}</p>${share}${relax}</article>`;
+      <div class="badges">${badges(r, it.slot)}</div><p class="prep">${esc(r.prep)}</p>${share}${relax}
+      <button type="button" class="howto" data-k="${it.k}">📖 Recipe & how to make it</button></article>`;
   }).join("");
   renderHydro();
   renderGrocery();
 }
 $("#shiftTabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (!b) return; activeShift = +b.dataset.i; renderPlan(); });
 $("#slots").addEventListener("click", e => {
+  const h = e.target.closest(".howto"); if (h) { openRecipe(+h.dataset.k); return; }
   const b = e.target.closest(".swap"); if (!b) return;
   const k = +b.dataset.k, it = plan.items[k], { pool } = poolForSlot(it.slot, plan.cfg);
   if (pool.length < 2) { toast("No other options fit these rules"); return; }
@@ -136,6 +141,27 @@ $("#slots").addEventListener("click", e => {
   do { i = (i + 1) % pool.length; next = pool[i]; tries++; } while ((next === picks[k] || sameShift.has(next.id)) && tries < pool.length);
   picks[k] = next; plan = finalizePlan(plan.cfg, picks); renderPlan();
 });
+
+/* Recipe popup */
+const ingName = (c, q) => c.unit === "ea" ? c.name.replace(/ \(.*\)/, "") : c.name.replace(/ \(.*\)/, "");
+function openRecipe(k) {
+  const it = plan.items[k], r = it.recipe; if (!r) return;
+  const steps = STEPS[r.id] || [r.prep];
+  $("#recipeTitle").textContent = r.n;
+  $("#recipeBody").innerHTML = `<p class="rmeta">${SLOT_NAMES[it.slot]} · ${esc(plan.cfg.shifts[it.shift].label)} · ${slotTime(it, plan.cfg)}</p>
+    <div class="badges">${badges(r, it.slot)}</div>
+    <h4>Ingredients <span>(1 serving)</span></h4>
+    <ul class="ing">${r.i.map(([key, q]) => { const c = CATALOG[key]; return `<li><span>${esc(ingName(c, q))}</span><b>${esc(fmtQty(q, c.unit))}</b></li>`; }).join("")}
+    ${r.pan.map(p => `<li class="pan"><span>${esc(PANTRY[p])}</span><b>pantry</b></li>`).join("")}</ul>
+    <h4>How to make it</h4>
+    <ol class="steps">${steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>
+    <p class="tip"><b>Packing tip:</b> ${esc(r.prep)}</p>
+    ${it.shares && it.shares.length ? `<p class="tip">♻ Uses the same ${esc(it.shares.map(s => s.name).join(" and "))} as ${esc([...new Set(it.shares.flatMap(s => s.with))].slice(0, 2).join(" and "))}.</p>` : ""}`;
+  $("#sheetBack").hidden = $("#recipeSheet").hidden = false;
+  $("#recipeSheet").scrollTop = 0; $("#recipeClose").focus();
+}
+function closeRecipe() { $("#recipeSheet").hidden = true; if ($("#installSheet").hidden) $("#sheetBack").hidden = true; }
+$("#recipeClose").addEventListener("click", closeRecipe);
 
 function renderHydro() {
   const el = $("#hydro");
@@ -200,10 +226,20 @@ $("#sharePlanBtn").addEventListener("click", async () => {
   toast(await copy(`${text} ${url}`) ? "Plan link copied" : "Couldn't share");
 });
 
+/* No API key needed: copy the list, then open the store so it can be pasted into search */
+async function copyAndOpen(url, store) {
+  const ok = await copy(listText());   // copy first, while the tap still counts as a user action
+  const win = window.open(url, "_blank"); if (win) { try { win.opener = null; } catch (e) {} }
+  toast(ok ? `List copied. Paste it into ${store} search.` : `Opening ${store}…`);
+  if (!win) location.href = url;
+}
+$("#openInstacart").addEventListener("click", () => copyAndOpen("https://www.instacart.com/store", "Instacart"));
+$("#openWalmart").addEventListener("click", () => copyAndOpen("https://www.walmart.com/", "Walmart"));
+
 /* Instacart (enabled when the site has an Instacart Developer Platform key) */
 async function checkInstacart() {
   if (PREVIEW) return;
-  try { const r = await fetch("/api/instacart"); const j = await r.json(); if (j.enabled) { $("#instacartBtn").hidden = false; $("#exportNote").textContent = "Instacart opens with every item ready to add to your cart at a store you pick. Or copy the list for Walmart."; } } catch (e) {}
+  try { const r = await fetch("/api/instacart"); const j = await r.json(); if (j.enabled) { $("#instacartBtn").hidden = false; $("#openInstacart").hidden = true; $("#exportNote").textContent = "Instacart opens with every item ready to add to your cart at a store you pick. Or copy the list for Walmart."; } } catch (e) {}
 }
 $("#instacartBtn").addEventListener("click", async () => {
   const btn = $("#instacartBtn"), win = window.open("", "_blank");
@@ -236,7 +272,7 @@ function openSheet() {
   $("#installSteps").innerHTML = `<ol>${steps.map(s => `<li>${s}</li>`).join("")}</ol>`;
   $("#sheetBack").hidden = $("#installSheet").hidden = false;
 }
-function closeSheet() { $("#sheetBack").hidden = $("#installSheet").hidden = true; }
+function closeSheet() { $("#sheetBack").hidden = $("#installSheet").hidden = $("#recipeSheet").hidden = true; }
 $("#installBtn").addEventListener("click", async () => {
   const p = window.__bip;
   if (p) { try { p.prompt(); const r = await p.userChoice; window.__bip = null; if (r && r.outcome === "accepted") { $("#installBtn").hidden = true; return; } } catch (e) {} }

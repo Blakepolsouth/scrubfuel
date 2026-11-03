@@ -2,7 +2,7 @@
    and lays out a hydration and caffeine timeline. Pure logic, no DOM. */
 import { CATALOG, PANTRY, RECIPES } from "./food.js";
 
-export const SLOT_NAMES = { pre: "Before shift", meal: "On-shift meal", snack: "Grab snack", post: "After shift" };
+export const SLOT_NAMES = { pre: "Before shift", meal: "On-shift meal", snack: "Protein snack", post: "After shift" };
 export const ON_FLOOR = { meal: 1, snack: 1 };
 export const DEPT_ORDER = ["Produce", "Deli", "Meat", "Dairy & Eggs", "Bakery", "Frozen", "Pantry", "Snacks", "Beverages"];
 
@@ -13,6 +13,7 @@ export function eligible(r, slot, cfg) {
   if (!r.slots.includes(slot)) return false;
   const d = r.d.split(" ");
   for (const k of ["v", "df", "gf", "nf"]) if (cfg.diet[k] && !d.includes(k)) return false;
+  if (slot === "snack" && !cfg.lowp && r.p < 10) return false;   // on-shift snacks are protein snacks
   if (ON_FLOOR[slot]) {
     if (cfg.f.odor && r.odor > 0) return false;
     if (cfg.f.nomic && r.mic > 1) return false;
@@ -50,6 +51,7 @@ function poolFor(slot, cfg) {
   let pool = RECIPES.filter(r => eligible(r, slot, cfg));
   if (pool.length || !ON_FLOOR[slot]) return { pool, relaxed: [] };
   const f = { ...cfg.f }, relaxed = [];
+  if (slot === "snack") { pool = RECIPES.filter(r => eligible(r, slot, { ...cfg, lowp: true })); if (pool.length) return { pool, relaxed: ["10 g protein minimum"] }; cfg = { ...cfg, lowp: true }; relaxed.push("10 g protein minimum"); }
   for (const [k, label] of RELAX) {
     if (!f[k]) continue; f[k] = false; relaxed.push(label);
     pool = RECIPES.filter(r => eligible(r, slot, { ...cfg, f }));
@@ -68,7 +70,7 @@ function objective(picks, slots, cfg) {
     const ps = perShift[s.shift] = perShift[s.shift] || {}; if (ps[r.id]) pen += 4; ps[r.id] = 1;  // no repeats inside one shift
     if (s.slot === "meal") pen += Math.max(0, 28 - r.p) / 7;            // shift meal should carry protein
     if (s.slot === "pre") pen += Math.max(0, 20 - r.p) / 10;
-    if (s.slot === "snack") pen += Math.max(0, 8 - r.p) / 12;
+    if (s.slot === "snack") pen += Math.max(0, 15 - r.p) / 6;            // protein snacks: aim for 15 g+
   });
   const n = cfg.shifts.length;
   for (const id in count) {

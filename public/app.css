@@ -139,6 +139,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(-
 .pantry b{color:var(--ink)}
 .exports{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .exports .primary{grid-column:1/-1}
+@media (max-width:360px){.exports{grid-template-columns:1fr}}
 .btn{border:1.5px solid var(--ink);background:var(--card);border-radius:10px;padding:12px;font-weight:700;font-size:15px;text-align:center}
 .btn.primary{background:var(--ink);color:var(--paper)}
 .note{margin:0;font-size:13px;color:var(--muted)}
@@ -155,3 +156,20 @@ footer p{margin:0}
 .x{background:none;border:0;font-size:18px;color:var(--muted);padding:2px 6px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:999px;font-weight:700;font-size:14px;box-shadow:0 8px 20px -6px rgba(0,0,0,.4)}
 @media (prefers-reduced-motion:no-preference){.slot{animation:fadein .25s ease both}@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}}
+
+/* recipe popup + protein line */
+.protline{margin:0;font-size:14px;padding:8px 10px;border-radius:8px;background:var(--paper);border:1px dashed var(--line)}
+.protline b{background:var(--hl);color:var(--hl-ink);padding:0 4px;border-radius:3px}
+.howto{grid-column:1/-1;justify-self:start;margin-top:4px;border:1.5px solid var(--scrub);color:var(--scrub);background:transparent;border-radius:8px;padding:7px 12px;font-weight:700;font-size:14px}
+.sheet.recipe{max-height:calc(100dvh - 48px - env(safe-area-inset-top,0px));overflow-y:auto;overscroll-behavior:contain}
+.sheet.recipe .sheethead{position:sticky;top:-16px;background:var(--card);padding-block:4px;margin-top:-4px;z-index:1}
+.rmeta{margin:6px 0 4px;font-family:var(--f-mono);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--scrub)}
+.sheet h4{margin:14px 0 6px;font-family:var(--f-display);font-weight:800;font-stretch:112%;font-size:16px;text-transform:uppercase}
+.sheet h4 span{font-family:var(--f-body);font-weight:400;text-transform:none;font-size:13px;color:var(--muted)}
+.ing{list-style:none;margin:0;padding:0}
+.ing li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.ing b{font-family:var(--f-mono);font-size:13px;white-space:nowrap}
+.ing li.pan{color:var(--muted)}
+.ing li.pan b{font-weight:500}
+.sheet ol.steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px}
+.tip{margin:12px 0 0;font-size:14px;padding:8px 10px;border-radius:8px;background:var(--scrub-soft)}

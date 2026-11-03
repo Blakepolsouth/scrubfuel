@@ -51,7 +51,13 @@ const C = {
   almonds: ["Almonds", "Snacks", 6, "oz", "6 oz bag", 0, 4.0],
   protein: ["Protein powder", "Pantry", 30, "scoop", "2 lb tub", 0, 30],
   electrolyte: ["Electrolyte drink mix", "Beverages", 10, "ea", "10 packets", 0, 7.0],
-  edamame: ["Frozen shelled edamame", "Frozen", 12, "oz", "12 oz bag", 0, 2.75]
+  edamame: ["Frozen shelled edamame", "Frozen", 12, "oz", "12 oz bag", 0, 2.75],
+  jerky: ["Beef jerky", "Snacks", 3, "oz", "3 oz bag", 0, 6.0],
+  proteinbar: ["Protein bars", "Snacks", 4, "ea", "4 count box", 0, 7.5],
+  rtdshake: ["Ready-to-drink protein shakes", "Beverages", 4, "ea", "4 pack (11 oz bottles)", 0, 9.0],
+  yogurtcup: ["Greek yogurt cups", "Dairy & Eggs", 4, "ea", "4 pack (5.3 oz cups)", 1, 5.0],
+  roastchick: ["Crunchy roasted chickpeas", "Snacks", 6, "oz", "6 oz bag", 0, 4.0],
+  pumpkin: ["Roasted pumpkin seeds", "Snacks", 5, "oz", "5 oz bag", 0, 4.0]
 };
 export const PANTRY = { oil: "Olive oil", saltpepper: "Salt & pepper", honey: "Honey", soy: "Soy sauce", chips: "Dark chocolate chips", cinnamon: "Cinnamon", vinegar: "Balsamic or red wine vinegar", seasoning: "Taco seasoning", mayo: "Mayo or Greek yogurt dressing" };
 
@@ -102,6 +108,16 @@ export const RECIPES = [
   { id: "overnight-oats", n: "Berry overnight oats", slots: ["snack", "pre"], odor: 0, mic: 0, eat: 5, hand: 0, p: 20, d: "v nf", i: [["oats", .5], ["milk", .5], ["yogurt", 2], ["chia", 1], ["berries", 2]], pan: ["honey"], prep: "Mix in a jar the night before. Eat cold." },
   { id: "cheese-crackers-grapes", n: "Cheddar, crackers & grapes", slots: ["snack"], odor: 0, mic: 0, eat: 4, hand: 1, p: 9, d: "v nf", i: [["cheddar", 1], ["crackers", 1], ["grapes", 3]], pan: [], prep: "Slice cheese at home." },
   { id: "egg-bites", n: "Spinach cheddar egg bites", slots: ["snack", "pre"], odor: 1, mic: 1, eat: 3, hand: 1, p: 16, d: "v gf nf", i: [["eggs", 2], ["spinach", .5], ["cheddar", .5]], pan: ["saltpepper"], prep: "Whisk, pour into a muffin tin, bake at 350°F for 20 minutes. Good cold." },
+  // ── Grab-and-go protein snacks (store-bought, no prep) ──
+  { id: "jerky-cheese", n: "Beef jerky + string cheese", slots: ["snack"], odor: 0, mic: 0, eat: 3, hand: 1, p: 22, d: "gf nf", i: [["jerky", 1], ["stringcheese", 1]], pan: [], prep: "Zero prep. Toss both in your bag." },
+  { id: "rtd-shake", n: "Ready-to-drink protein shake", slots: ["snack", "post"], odor: 0, mic: 0, eat: 1, hand: 1, p: 30, d: "v gf nf", i: [["rtdshake", 1]], pan: [], prep: "Keep one in your locker or the unit fridge for the 3 AM dip." },
+  { id: "protein-bar-apple", n: "Protein bar + apple", slots: ["snack"], odor: 0, mic: 0, eat: 3, hand: 1, p: 20, d: "v", i: [["proteinbar", 1], ["apple", 1]], pan: [], prep: "Check the label: many bars contain nuts or dairy." },
+  { id: "yogurt-cup-granola", n: "Greek yogurt cup + granola", slots: ["snack", "post"], odor: 0, mic: 0, eat: 3, hand: 0, p: 16, d: "v nf", i: [["yogurtcup", 1], ["granola", .25]], pan: [], prep: "Granola in a small bag, pour on right before eating." },
+  { id: "chickpeas-cheese", n: "Roasted chickpeas + string cheese", slots: ["snack"], odor: 0, mic: 0, eat: 3, hand: 1, p: 15, d: "v gf nf", i: [["roastchick", 1], ["stringcheese", 1]], pan: [], prep: "Portion the chickpeas into a snack bag." },
+  { id: "chickpea-seed-mix", n: "Crunchy chickpea & pumpkin seed mix", slots: ["snack"], odor: 0, mic: 0, eat: 2, hand: 1, p: 13, d: "v df gf nf", i: [["roastchick", 1], ["pumpkin", 1]], pan: [], prep: "Shake together in a snack bag. Dairy-free and nut-free protein." },
+  { id: "turkey-cheese-stack", n: "Turkey, cheddar & cracker stacks", slots: ["snack"], odor: 0, mic: 0, eat: 3, hand: 1, p: 18, d: "nf", i: [["turkey", 2], ["cheddar", .5], ["crackers", .75]], pan: [], prep: "Fold turkey and cheese into squares; stack on crackers when you eat." },
+  { id: "protein-oat-bites", n: "Protein oat bites", slots: ["snack"], odor: 0, mic: 0, eat: 2, hand: 1, p: 16, d: "v", i: [["oats", .33], ["pb", 2], ["protein", .5]], pan: ["honey", "chips"], prep: "Mix, roll into 4 bites, chill. One batch covers the stretch." },
+  { id: "edamame-jerky", n: "Edamame + jerky combo", slots: ["snack"], odor: 0, mic: 0, eat: 4, hand: 1, p: 24, d: "df gf nf", i: [["edamame", 2], ["jerky", .75]], pan: ["saltpepper"], prep: "Thaw edamame overnight in the fridge. Good cold." },
   // ── Before shift (at home, so smell doesn't matter) ──
   { id: "spinach-scramble-toast", n: "Spinach cheddar scramble + toast", slots: ["pre"], odor: 1, mic: 2, eat: 10, hand: 0, p: 30, d: "v nf", i: [["eggs", 3], ["spinach", 1], ["cheddar", .5], ["bread", 2]], pan: ["oil", "saltpepper"], prep: "Ten minutes in a pan." },
   { id: "avocado-egg-toast", n: "Avocado toast + eggs", slots: ["pre"], odor: 1, mic: 2, eat: 8, hand: 0, p: 18, d: "v df nf", i: [["bread", 2], ["avocado", .5], ["eggs", 2], ["lemon", .25]], pan: ["saltpepper"], prep: "Toast, smash avocado with lemon, top with eggs." },
