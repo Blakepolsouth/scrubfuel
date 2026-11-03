@@ -165,6 +165,7 @@ function renderPlan() {
   renderPrep();
   renderGrocery();
   renderToday();
+  renderRemind(); scheduleSync();
 }
 $("#shiftTabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (!b) return; activeShift = +b.dataset.i; renderPlan(); });
 $("#slots").addEventListener("click", e => {
@@ -264,9 +265,13 @@ function renderToday() {
     ${next}
     ${pre && mode !== "on" ? `<p class="tdsub">Eat before you go: <button type="button" class="linkbtn" data-r="${pre.k}">${esc(pre.recipe.n)}</button></p>` : ""}
     <div class="bag"><div class="baghead"><b>${mode === "on" ? "In your bag" : "Pack your bag"}</b><span>${done}/${bag.length} packed · ≈ ${prot} g protein</span></div>
-    ${bag.map(it => `<div class="bagrow"><label><input type="checkbox" data-pack="${it.k}" data-date="${sh.date}"${pk[it.k] ? " checked" : ""}><span><small>${it.slot === "meal" ? "Meal" : "Protein snack"}</small>${esc(it.recipe.n)}</span></label><button type="button" class="howmini" data-r="${it.k}" aria-label="How to make ${esc(it.recipe.n)}">📖</button></div>`).join("")}</div>`;
+    ${bag.map(it => `<div class="bagrow"><label><input type="checkbox" data-pack="${it.k}" data-date="${sh.date}"${pk[it.k] ? " checked" : ""}><span><small>${it.slot === "meal" ? "Meal" : "Protein snack"}</small>${esc(it.recipe.n)}</span></label><button type="button" class="howmini" data-r="${it.k}" aria-label="How to make ${esc(it.recipe.n)}">📖</button></div>`).join("")}</div>
+    <p class="tdsub tdrem">${S.remind && S.remind.on ? "🔔 Reminders are on for this stretch." : `🔕 <button type="button" class="linkbtn" id="tdRemind">Turn on shift reminders</button> so you don't have to remember.`}</p>`;
 }
-$("#today").addEventListener("click", e => { const b = e.target.closest("[data-r]"); if (b) openRecipe(+b.dataset.r); });
+$("#today").addEventListener("click", e => {
+  if (e.target.closest("#tdRemind")) { $("#remind").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+  const b = e.target.closest("[data-r]"); if (b) openRecipe(+b.dataset.r);
+});
 $("#today").addEventListener("change", e => {
   const t = e.target; if (!t.dataset.pack) return;
   const p = store.get("packed", {}); const d = p[t.dataset.date] = p[t.dataset.date] || {};
@@ -276,7 +281,7 @@ $("#today").addEventListener("change", e => {
 });
 
 /* ── Prep day: batch tasks across the whole stretch ── */
-function renderPrep() {
+function prepTasks() {
   const cnt = {}, u = plan.use; plan.items.forEach(it => { if (it.recipe) cnt[it.recipe.id] = (cnt[it.recipe.id] || 0) + 1; });
   const has = (...ids) => ids.reduce((t, id) => t + (cnt[id] || 0), 0);
   const T = [];
@@ -295,8 +300,12 @@ function renderPrep() {
   if (u.edamame) T.push(["edamame", `Move frozen edamame to the fridge the night before you need it.`, 1]);
   const snacks = plan.items.filter(it => it.slot === "snack" && it.recipe).length;
   if (snacks) T.push(["bags", `Portion ${snacks} protein snacks into grab bags, one set per shift.`, 10]);
-  const done = store.get("prep", {}), mins = T.reduce((t, x) => t + x[2], 0);
-  $("#prepMeta").textContent = T.length ? `about ${Math.max(10, Math.round(mins * 0.7 / 5) * 5)} min` : "";
+  return T;
+}
+const prepMinutes = T => Math.max(10, Math.round(T.reduce((t, x) => t + x[2], 0) * 0.7 / 5) * 5);
+function renderPrep() {
+  const T = prepTasks(), done = store.get("prep", {});
+  $("#prepMeta").textContent = T.length ? `about ${prepMinutes(T)} min` : "";
   $("#prepList").innerHTML = T.length ? T.map(([k, t]) => `<li><label class="${done[k] ? "done" : ""}"><input type="checkbox" data-prep="${k}"${done[k] ? " checked" : ""}><span>${esc(t)}</span></label></li>`).join("") : `<li class="none">No cooking needed for this plan. Just shop and pack.</li>`;
 }
 $("#prepList").addEventListener("change", e => { const k = e.target.dataset.prep; if (!k) return; const d = store.get("prep", {}); if (e.target.checked) d[k] = 1; else delete d[k]; store.set("prep", d); e.target.closest("label").classList.toggle("done", e.target.checked); });
@@ -427,6 +436,84 @@ $("#instacartBtn").addEventListener("click", async () => {
   btn.disabled = false; btn.textContent = "🛒 Send to Instacart";
 });
 
+/* ── Shift reminders (web push). The phone works out the times; the server just delivers them. ── */
+const RTYPES = [
+  ["pack", "🎒 Pack your bag", "75 min before each shift, with your meal and snacks"],
+  ["caf", "☕ Last call for caffeine", "6 hours before your planned sleep"],
+  ["dip", "⚡ Protein snack at the slump", "3 AM dip on nights, afternoon slump on days"],
+  ["prep", "🔪 Prep night", "The evening before your stretch starts"],
+  ["next", "🗓 Plan your next stretch", "The day after your last shift"]
+];
+if (!S.remind) S.remind = { on: false, pack: true, caf: true, dip: true, prep: true, next: true };
+const pushSupported = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+const b64ToBytes = b64 => { const p = "=".repeat((4 - b64.length % 4) % 4), raw = atob((b64 + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(raw, c => c.charCodeAt(0)); };
+const at = (dateIso, min) => new Date(fromIso(dateIso).getTime() + min * 6e4);
+const clockOf = d => hm(d.getHours() * 60 + d.getMinutes());
+function remindEvents() {
+  if (!plan) return [];
+  const c = plan.cfg, R = S.remind, ev = [], now = Date.now();
+  c.shifts.forEach((sh, i) => {
+    const w = shiftWindow(sh, c), its = plan.items.filter(it => it.shift === i && it.recipe);
+    const meal = its.find(it => it.slot === "meal"), snacks = its.filter(it => it.slot === "snack"), prot = its.reduce((t, it) => t + it.recipe.p, 0);
+    const when = sh.type === "night" ? "tonight's" : "today's";
+    if (R.pack) ev.push({ at: w.start.getTime() - 75 * 6e4, tag: "pack-" + sh.date, title: `🎒 Pack for ${when} shift`,
+      body: `${meal ? meal.recipe.n : "Your meal"}${snacks.length ? " + " + snacks.map(s => s.recipe.n).join(", ") : ""}. About ${prot} g protein today.` });
+    const h = hydration(sh.type, sh.type === "night" ? c.nightStart : c.dayStart, c.len);
+    const stop = h.events.find(e => e.k === "stop"), dip = h.events.find(e => e.k === "dip");
+    if (R.caf && stop) ev.push({ at: at(sh.date, stop.m).getTime(), tag: "caf-" + sh.date, title: "☕ Last call for caffeine",
+      body: `Sleep's planned around ${h.sleep}. Water or electrolytes from here.` });
+    if (R.dip && dip) { const sn = snacks[snacks.length - 1]; ev.push({ at: at(sh.date, dip.m).getTime(), tag: "dip-" + sh.date,
+      title: sh.type === "night" ? "⚡ 3 AM dip: protein time" : "⚡ Afternoon slump: protein time",
+      body: `${sn ? sn.recipe.n + " and" : "A protein snack and"} a glass of water beats sugar or another coffee.` }); }
+  });
+  const first = c.shifts[0], last = c.shifts[c.shifts.length - 1];
+  if (R.prep && first) { const T = prepTasks(); if (T.length > 1) ev.push({ at: at(first.date, -6 * 60).getTime(), tag: "prep", title: "🔪 Prep night",
+    body: `${T.length} quick tasks, about ${prepMinutes(T)} min, and your whole stretch is ready. Tap for the checklist.` }); }
+  if (R.next && last) { const lw = shiftWindow(last, c); const d = new Date(lw.end); d.setHours(18, 0, 0, 0); if (d < lw.end) d.setDate(d.getDate() + 1);
+    ev.push({ at: d.getTime(), tag: "next", title: "🗓 Got your next shifts?", body: "Tap them in and get one grocery list for the whole stretch." }); }
+  return ev.filter(e => e.at > now).sort((a, b) => a.at - b.at);
+}
+function renderRemind() {
+  const R = S.remind, el = $("#remind"), ok = pushSupported() && !PREVIEW;
+  el.hidden = !plan;
+  $("#remindToggle").setAttribute("aria-checked", String(!!R.on));
+  $("#remindList").innerHTML = R.on ? RTYPES.map(([k, t, d]) => `<label class="rmrow"><input type="checkbox" data-rk="${k}"${R[k] ? " checked" : ""}><span><b>${t}</b><small>${d}</small></span></label>`).join("") : "";
+  const ev = plan ? remindEvents() : [];
+  let note = "";
+  if (!ok) note = IOS && !standalone ? "On iPhone, reminders need ScrubFuel on your Home Screen first: tap Get the app at the top, then come back here." : "This browser can't do notifications. Try Chrome, or on iPhone, add ScrubFuel to your Home Screen.";
+  else if (R.on) note = ev.length ? `Next: ${ev[0].title.replace(/^\W+\s*/, "")} · ${DOW[new Date(ev[0].at).getDay()]} ${clockOf(new Date(ev[0].at))}` : "Nothing left to remind you about in this plan.";
+  else if (IOS && !standalone) note = "On iPhone, add ScrubFuel to your Home Screen first (Get the app, top right).";
+  $("#remindNote").textContent = note;
+}
+let syncT, lastSync = "";
+function scheduleSync(confirm = false) { if (!S.remind.on || PREVIEW) return; clearTimeout(syncT); syncT = setTimeout(() => syncRemind(confirm), confirm ? 0 : 1200); }
+async function syncRemind(confirm) {
+  try {
+    const reg = await navigator.serviceWorker.ready; let sub = await reg.pushManager.getSubscription();
+    if (!sub) { const { publicKey } = await (await fetch("/api/reminders")).json(); sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(publicKey) }); }
+    const events = remindEvents(), key = JSON.stringify(events) + sub.endpoint;
+    if (!confirm && key === lastSync) return;
+    const r = await fetch("/api/reminders", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "sync", subscription: sub.toJSON(), events, confirm, firstLabel: events[0] ? `${DOW[new Date(events[0].at).getDay()]} ${clockOf(new Date(events[0].at))}` : "" }) });
+    if (r.status === 410) { await sub.unsubscribe(); lastSync = ""; return syncRemind(confirm); }
+    if (!r.ok) throw new Error("sync " + r.status);
+    lastSync = key;
+  } catch (e) { if (confirm) { toast("Couldn't turn on reminders. Try again in a moment."); S.remind.on = false; save(); renderRemind(); renderToday(); } }
+}
+$("#remindToggle").addEventListener("click", async () => {
+  const R = S.remind;
+  if (R.on) {
+    R.on = false; save(); renderRemind(); renderToday();
+    try { const reg = await navigator.serviceWorker.ready, sub = await reg.pushManager.getSubscription(); if (sub) await fetch("/api/reminders", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "off", subscription: sub.toJSON() }) }); } catch (e) {}
+    toast("Reminders off"); return;
+  }
+  if (PREVIEW || !pushSupported()) { renderRemind(); if (IOS && !standalone) openSheet(); else toast("Notifications aren't available in this browser"); return; }
+  const perm = await Notification.requestPermission();
+  if (perm !== "granted") { $("#remindNote").textContent = "Notifications are blocked for ScrubFuel. Allow them in your phone or browser settings, then try again."; return; }
+  R.on = true; save(); renderRemind(); renderToday(); lastSync = ""; await syncRemind(true);
+  if (S.remind.on) toast("Reminders on. Check for a test notification.");
+});
+$("#remindList").addEventListener("change", e => { const k = e.target.dataset.rk; if (!k) return; S.remind[k] = e.target.checked; save(); renderRemind(); scheduleSync(); });
+
 /* ── toast ── */
 let tt;
 function toast(msg) {
@@ -465,3 +552,4 @@ if (fromShare) { save(); toast("Opened a shared plan. Edit it for your shifts.")
 else if (newWeek) { save(); setupOpen = true; renderSetupBar(); toast("New week! Tap your next shifts."); }
 else if (!RETURNING) save();
 setInterval(() => { if (plan && document.visibilityState === "visible") renderToday(); }, 60000);
+if (HOST.endsWith(".test")) window.__sf = { remindEvents: () => { S.remind = { ...S.remind, pack: true, caf: true, dip: true, prep: true, next: true }; return remindEvents(); } };
