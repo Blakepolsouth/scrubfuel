@@ -11,6 +11,7 @@ function rng(seed) { let s = (seed >>> 0) || 1; return () => { s ^= s << 13; s ^
 
 export function eligible(r, slot, cfg) {
   if (!r.slots.includes(slot)) return false;
+  if (cfg.exclude && cfg.exclude.includes(r.id)) return false;      // meals the user said "not for me"
   const d = r.d.split(" ");
   for (const k of ["v", "df", "gf", "nf"]) if (cfg.diet[k] && !d.includes(k)) return false;
   if (slot === "snack" && !cfg.lowp && r.p < 10) return false;   // on-shift snacks are protein snacks

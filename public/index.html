@@ -36,11 +36,16 @@
     <button class="getapp" id="installBtn" type="button" hidden>📲 Get the app</button>
   </header>
 
-  <section class="hero">
+  <section class="today" id="today" hidden aria-live="polite"></section>
+
+  <button class="setupbar" id="setupBar" type="button" hidden aria-expanded="false" aria-controls="setup"></button>
+
+  <section class="hero" id="hero">
     <h1>Shift meals. <mark>One grocery run.</mark> Nothing rots in the fridge.</h1>
     <p>Tap your shifts, set your floor rules, and get a meal plan built for breakroom reality plus a single grocery list that uses up what you buy.</p>
   </section>
 
+  <div id="setup">
   <section class="step" aria-labelledby="s1">
     <div class="stephead"><span class="num">1</span><h2 id="s1">Your shifts</h2><span class="hint" id="shiftCount">Tap a day: off → day → night</span></div>
     <div class="days" id="days" role="group" aria-label="Next 7 days"></div>
@@ -73,7 +78,9 @@
       </div>
       <label class="switch"><input type="checkbox" id="postToggle"> After-shift snack</label>
     </div>
+    <p class="nopeline" id="nopeLine" hidden></p>
   </section>
+  </div>
 
   <section class="plan" id="plan" aria-live="polite">
     <div class="stephead"><span class="num">3</span><h2>Your plan</h2><button class="ghost" id="shuffleBtn" type="button">🔀 Shuffle</button></div>
@@ -81,6 +88,11 @@
     <div class="tabs" id="shiftTabs" role="tablist" aria-label="Shifts"></div>
     <div class="slots" id="slots"></div>
     <div class="hydro" id="hydro"></div>
+  </section>
+
+  <section class="prepday" id="prepday" aria-labelledby="ph">
+    <div class="stephead"><span class="num">✓</span><h2 id="ph">Prep day checklist</h2><span class="hint" id="prepMeta"></span></div>
+    <ul class="preplist" id="prepList"></ul>
   </section>
 
   <section class="grocery" id="grocery" aria-labelledby="gh">
@@ -101,6 +113,7 @@
       <button class="btn" id="shareListBtn" type="button">📤 Share list</button>
     </div>
     <p class="note" id="exportNote"></p>
+    <div class="amazon" id="amazon"></div>
   </section>
 
   <section class="unit">
@@ -123,6 +136,7 @@
 <div class="sheet recipe" id="recipeSheet" hidden role="dialog" aria-modal="true" aria-labelledby="recipeTitle">
   <div class="sheethead"><b id="recipeTitle">Recipe</b><button class="x" id="recipeClose" type="button" aria-label="Close recipe">✕</button></div>
   <div id="recipeBody"></div>
+  <button class="nope" id="nopeBtn" type="button">👎 Not for me. Never suggest this again.</button>
 </div>
 <textarea id="copyArea" class="sr" aria-hidden="true" tabindex="-1"></textarea>
 

@@ -180,3 +180,50 @@ footer p{margin:0}
 .itemrow.shop{grid-template-columns:minmax(0,1fr) 40px;gap:6px}
 .itemrow .item{border-bottom:0}
 .find{display:grid;place-items:center;width:38px;height:38px;margin-top:2px;border:1.5px solid var(--scrub);border-radius:8px;text-decoration:none;font-size:16px;background:var(--scrub-soft)}
+
+/* setup wrapper + summary bar */
+#setup{display:flex;flex-direction:column;gap:22px}
+.setupbar{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px}
+.setupbar .edit{font-weight:700;color:var(--scrub);white-space:nowrap}
+.linkbtn{background:none;border:0;padding:0;color:var(--scrub);font-weight:700;text-decoration:underline;text-underline-offset:2px;font-size:inherit}
+.nopeline{margin:0;font-size:13.5px;color:var(--muted)}
+.day.past{opacity:.5}
+.day.now .dn{color:var(--scrub)}
+.day.now[data-type="night"] .dn{color:var(--hl)}
+
+/* Today card */
+.today{background:var(--ink);color:var(--paper);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.tdhead{display:flex;flex-direction:column;gap:4px}
+.tdtag{align-self:flex-start;background:var(--hl);color:var(--hl-ink);font-family:var(--f-mono);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:4px}
+.today h2{margin:0;font-family:var(--f-display);font-weight:900;font-stretch:112%;font-size:26px;line-height:1.05;letter-spacing:-.01em}
+.tdsub{margin:0;font-size:15px;opacity:.92}
+.today .linkbtn{color:var(--hl)}
+.tdnext{margin:0;display:flex;gap:10px;align-items:center;font-size:15px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.08)}
+.bag{background:var(--card);color:var(--ink);border-radius:10px;padding:10px 12px}
+.baghead{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.baghead span{font-size:13px;color:var(--muted)}
+.bagrow{display:flex;align-items:center;gap:8px;border-bottom:1px dashed var(--line)}
+.bagrow:last-child{border-bottom:0}
+.bagrow label{flex:1;display:flex;gap:10px;align-items:center;padding:8px 0;cursor:pointer;min-width:0}
+.bagrow input{width:20px;height:20px;accent-color:var(--scrub);flex:none}
+.bagrow small{display:block;font-family:var(--f-mono);font-size:11px;font-weight:700;text-transform:uppercase;color:var(--scrub)}
+.bagrow input:checked + span{text-decoration:line-through;opacity:.55}
+.howmini{border:1px solid var(--line);background:var(--paper);border-radius:8px;width:36px;height:36px;flex:none}
+
+/* prep day */
+.prepday{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.preplist{list-style:none;margin:0;padding:0}
+.preplist li{border-bottom:1px dashed var(--line)}
+.preplist label{display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;padding:8px 0;cursor:pointer;font-size:15px}
+.preplist input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--scrub)}
+.preplist label.done span{text-decoration:line-through;opacity:.5}
+.preplist .none{padding:8px 0;color:var(--muted);border:0}
+
+/* amazon */
+.amazon{border:1.5px dashed var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.azhead{display:flex;flex-direction:column}
+.azhead span{font-size:13px;color:var(--muted)}
+.amazon ul{list-style:none;margin:0;padding:0}
+.amazon li{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:14.5px}
+.amazon li small{font-family:var(--f-mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.nope{display:block;width:100%;margin-top:14px;background:transparent;border:1px solid var(--line);border-radius:8px;padding:10px;font-weight:700;color:var(--muted);font-size:14px}

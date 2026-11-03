@@ -1,6 +1,6 @@
 // ScrubFuel service worker: works offline in the breakroom, always fetches fresh code when online.
-const SHELL = "scrubfuel-shell-v3";
-const FILES = ["/", "/app.css", "/app.js", "/planner.js", "/food.js", "/steps.js", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png"];
+const SHELL = "scrubfuel-shell-v4";
+const FILES = ["/", "/app.css", "/app.js", "/planner.js", "/food.js", "/steps.js", "/stores.js", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {
