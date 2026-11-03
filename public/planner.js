@@ -187,18 +187,18 @@ export function hydration(type, startStr, lenH) {
   const sleep = night ? E + 90 : Math.max(E + 180, toMin("22:30") + (toMin("22:30") < S ? 1440 : 0));
   const cutoff = sleep - 6 * 60;
   const ev = [];
-  ev.push({ m: S - 60, k: "food", t: "Eat your before-shift meal", d: "Protein plus slow carbs, so you're not running on empty in the first rush." });
-  ev.push({ m: S, k: "caf", t: "Coffee OK", d: "Start-of-shift caffeine is fine. Pair it with water." });
-  ev.push({ m: S + 120, k: "water", t: "Water check", d: "Refill your bottle. Aim to drink steadily, not all at once at break." });
+  ev.push({ m: S - 60, k: "food", t: "Eat your before-shift meal", d: "Protein plus slow carbs, so you're not running on fumes by the first call light." });
+  ev.push({ m: S, k: "caf", t: "Coffee OK", d: "Start-of-shift coffee is fine. Grab some water too, before the first fire." });
+  ev.push({ m: S + 120, k: "water", t: "Water check", d: "Refill your bottle. Sipping all shift beats chugging at break." });
   const mid = S + Math.round(lenH * 60 * 0.45);
-  ev.push({ m: mid, k: "food", t: "On-shift meal", d: "Your main meal. Eat it even if you're not hungry yet." });
-  ev.push({ m: S + Math.round(lenH * 60 * 0.55), k: "lyte", t: "Electrolytes", d: "Mid-shift is a good time for an electrolyte drink, especially after hours in PPE." });
-  if (cutoff > S && cutoff < E) ev.push({ m: cutoff, k: "stop", t: "Last call for caffeine", d: `About 6 hours before you plan to sleep (around ${hm(sleep)}), so it doesn't wreck your rest.` });
+  ev.push({ m: mid, k: "food", t: "On-shift meal", d: "Eat it even if you're not hungry yet. You will be later, usually mid-admission." });
+  ev.push({ m: S + Math.round(lenH * 60 * 0.55), k: "lyte", t: "Electrolytes", d: "Good time for electrolytes, especially after a few hours sweating in PPE." });
+  if (cutoff > S && cutoff < E) ev.push({ m: cutoff, k: "stop", t: "Last call for caffeine", d: `About 6 hours before you plan to sleep (around ${hm(sleep)}). Future you, trying to sleep, says thanks.` });
   else if (cutoff <= S) ev.push({ m: S + 30, k: "stop", t: "Go easy on caffeine today", d: `Your sleep is planned for ${hm(sleep)}, so caffeine this shift will likely cut into it.` });
-  if (night) ev.push({ m: Math.max(S + 360, toMin("03:00") + (toMin("03:00") < S ? 1440 : 0)), k: "dip", t: "Beat the 3 AM dip", d: "Protein snack plus water instead of sugar or another coffee. Bright light and a short walk help too." });
-  else ev.push({ m: Math.max(S + 360, toMin("15:00")), k: "dip", t: "Afternoon slump", d: "Grab-snack time: protein and water, not the vending machine." });
-  ev.push({ m: E - 90, k: "water", t: "Water check", d: "Finish your bottle now rather than right before bed." });
-  ev.push({ m: E, k: "end", t: "Shift over", d: night ? "Skip caffeine. Have a small, light snack and wear sunglasses on the drive home to help you sleep." : "Small dinner, then wind down. No caffeine." });
+  if (night) ev.push({ m: Math.max(S + 360, toMin("03:00") + (toMin("03:00") < S ? 1440 : 0)), k: "dip", t: "Beat the 3 AM dip", d: "Protein and water instead of sugar or a 4th coffee. Bright light and a lap around the unit help too." });
+  else ev.push({ m: Math.max(S + 360, toMin("15:00")), k: "dip", t: "Afternoon slump", d: "Protein and water, not the vending machine. It'll still be there tomorrow." });
+  ev.push({ m: E - 90, k: "water", t: "Water check", d: "Finish your bottle now, not right before bed. (Ask your bladder.)" });
+  ev.push({ m: E, k: "end", t: "Shift over", d: night ? "No caffeine. Small snack, sunglasses for the drive home, then sleep. You earned it." : "Light dinner, then wind down. No caffeine. You earned it." });
   return { events: ev.sort((a, b) => a.m - b.m).map(e => ({ ...e, time: hm(e.m) })), sleep: hm(sleep), cutoff: hm(cutoff), start: hm(S), end: hm(E) };
 }
 

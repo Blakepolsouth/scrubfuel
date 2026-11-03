@@ -37,7 +37,7 @@ export default async (req) => {
     try {
       await webpush.sendNotification(record.subscription, JSON.stringify({
         title: "🔔 Shift reminders are on",
-        body: next ? `First one: "${next.title.replace(/^\W+\s*/, "")}" at ${clean(body.firstLabel, 40) || "the right time"}.` : "We'll remind you when your next shifts are planned.",
+        body: next ? `We've got your back. First one: "${next.title.replace(/^\W+\s*/, "")}" at ${clean(body.firstLabel, 40) || "the right time"}.` : "We've got your back. We'll nudge you once your next shifts are planned.",
         tag: "scrubfuel-confirm", url: "/"
       }), { TTL: 3600 });
     } catch (e) {

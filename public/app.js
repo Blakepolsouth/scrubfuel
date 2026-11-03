@@ -75,7 +75,7 @@ $("#days").addEventListener("click", e => {
   const b = e.target.closest(".day"); if (!b) return;
   const k = b.dataset.d, cur = S.dates[k] || "off", n = Object.values(S.dates).length;
   const next = cur === "off" ? "day" : cur === "day" ? "night" : "off";
-  if (cur === "off" && n >= MAX) { toast(`Up to ${MAX} shifts per plan`); return; }
+  if (cur === "off" && n >= MAX) { toast(`${MAX} shifts max per plan. You deserve a day off in there.`); return; }
   if (next === "off") delete S.dates[k]; else S.dates[k] = next;
   confirmShifts(); save(); renderDays(); regen();
 });
@@ -93,7 +93,7 @@ $("#nightStart").addEventListener("change", e => { S.nightStart = e.target.value
 $$(".rule").forEach(b => b.addEventListener("click", () => { const k = b.dataset.f; S.f[k] = !S.f[k]; b.setAttribute("aria-pressed", String(S.f[k])); save(); k === "hydro" ? renderPlan() : regen(); }));
 $$(".chip").forEach(b => b.addEventListener("click", () => { const k = b.dataset.d; S.diet[k] = !S.diet[k]; b.setAttribute("aria-pressed", String(S.diet[k])); save(); regen(); }));
 $("#postToggle").addEventListener("change", e => { S.post = e.target.checked; save(); regen(); });
-$("#shuffleBtn").addEventListener("click", () => { S.seed = (Math.random() * 1e9) >>> 0 || 1; save(); regen(); toast("New plan"); });
+$("#shuffleBtn").addEventListener("click", () => { S.seed = (Math.random() * 1e9) >>> 0 || 1; save(); regen(); toast("Fresh plan, same rules."); });
 
 function syncControls() {
   setSeg("#storeSeg", "store", S.store);
@@ -143,7 +143,7 @@ function renderPlan() {
   $("#stats").hidden = $("#shiftTabs").hidden = empty; $("#shuffleBtn").hidden = empty;
   $("#grocery").hidden = empty; $(".unit").hidden = empty; $("#prepday").hidden = empty;
   renderSetupBar(); renderNope();
-  if (empty) { $("#slots").innerHTML = `<div class="slot empty"><h3>Tap at least one day in Step 1 to build your plan.</h3></div>`; $("#hydro").innerHTML = ""; renderToday(); return; }
+  if (empty) { $("#slots").innerHTML = `<div class="slot empty"><h3>Tap the days you work up top, and your plan shows up right here.</h3></div>`; $("#hydro").innerHTML = ""; renderToday(); return; }
   const c = plan.cfg, g = plan.grocery;
   $("#stats").innerHTML = `
     <div class="stat hl"><b>${g.zeroWaste}%</b><span>fresh food used up</span></div>
@@ -154,7 +154,7 @@ function renderPlan() {
   const prot = items.reduce((t, it) => t + (it.recipe ? it.recipe.p : 0), 0), snackP = items.filter(it => it.slot === "snack" && it.recipe).reduce((t, it) => t + it.recipe.p, 0);
   $("#slots").innerHTML = `<p class="protline"><b>≈ ${prot} g protein</b> this shift, including ${snackP} g from protein snacks.</p>` + items.map(it => {
     const r = it.recipe;
-    if (!r) return `<div class="slot empty"><div class="when">${SLOT_NAMES[it.slot]}</div><h3>No meal fits every rule here. Try turning off a diet filter.</h3></div>`;
+    if (!r) return `<div class="slot empty"><div class="when">${SLOT_NAMES[it.slot]}</div><h3>Nothing fits every rule here. Try turning off a diet filter.</h3></div>`;
     const relax = it.relaxed && it.relaxed.length ? `<p class="share">Not enough options fit every rule, so this one relaxes: ${esc(it.relaxed.join(", "))}.</p>` : "";
     return `<article class="slot"><div class="when">${SLOT_NAMES[it.slot]} · ${slotTime(it, c)}</div>
       <h3>${esc(r.n)}</h3><button type="button" class="swap" data-k="${it.k}" aria-label="Swap ${esc(r.n)}">Swap</button>
@@ -205,7 +205,7 @@ $("#recipeClose").addEventListener("click", closeRecipe);
 $("#nopeBtn").addEventListener("click", () => {
   const it = plan.items[recipeOpen]; if (!it || !it.recipe) return;
   const r = it.recipe; if (!S.nope.includes(r.id)) S.nope.push(r.id);
-  save(); closeRecipe(); regen(); toast(`Got it. No more ${r.n.toLowerCase()}.`);
+  save(); closeRecipe(); regen(); toast(`Noted. ${r.n} is off the menu.`);
 });
 function renderNope() {
   const n = S.nope.length, el = $("#nopeLine");
@@ -244,7 +244,7 @@ function renderToday() {
   }
   if (idx < 0) {
     el.hidden = false;
-    el.innerHTML = `<div class="tdhead"><div class="tdrow"><span class="tdtag">Stretch done</span><button type="button" class="tdedit" id="tdEdit">Plan next shifts</button></div><h2>Stretch complete. Rest well.</h2></div><p class="tdsub">No more shifts in this plan. Tap <b>Edit</b> to set up your next stretch.</p>`;
+    el.innerHTML = `<div class="tdhead"><div class="tdrow"><span class="tdtag">Stretch done</span><button type="button" class="tdedit" id="tdEdit">Plan next shifts</button></div><h2>Stretch complete. Go sleep like it's your job.</h2></div><p class="tdsub">That's every shift in this plan. When the next schedule drops, tap <b>Plan next shifts</b>.</p>`;
     return;
   }
   const sh = c.shifts[idx], w = shiftWindow(sh, c), packed = store.get("packed", {}), pk = packed[sh.date] || {};
@@ -315,7 +315,7 @@ const prepMinutes = T => Math.max(10, Math.round(T.reduce((t, x) => t + x[2], 0)
 function renderPrep() {
   const T = prepTasks(), done = store.get("prep", {});
   $("#prepMeta").textContent = T.length ? `about ${prepMinutes(T)} min` : "";
-  $("#prepList").innerHTML = T.length ? T.map(([k, t]) => `<li><label class="${done[k] ? "done" : ""}"><input type="checkbox" data-prep="${k}"${done[k] ? " checked" : ""}><span>${esc(t)}</span></label></li>`).join("") : `<li class="none">No cooking needed for this plan. Just shop and pack.</li>`;
+  $("#prepList").innerHTML = T.length ? T.map(([k, t]) => `<li><label class="${done[k] ? "done" : ""}"><input type="checkbox" data-prep="${k}"${done[k] ? " checked" : ""}><span>${esc(t)}</span></label></li>`).join("") : `<li class="none">No cooking this time. Shop, pack, done.</li>`;
 }
 $("#prepList").addEventListener("change", e => { const k = e.target.dataset.prep; if (!k) return; const d = store.get("prep", {}); if (e.target.checked) d[k] = 1; else delete d[k]; store.set("prep", d); e.target.closest("label").classList.toggle("done", e.target.checked); });
 
@@ -336,7 +336,7 @@ function renderGrocery() {
   $("#listMeta").textContent = `${g.rows.length} items`;
   const lo = g.leftovers.slice(0, 4);
   $("#waste").innerHTML = `<div class="meter" role="img" aria-label="${g.zeroWaste}% of fresh food used"><i style="width:${g.zeroWaste}%"></i></div>
-    <p><b>${g.zeroWaste}% zero-waste.</b> Ingredients are shared across meals so packages get finished, not tossed.</p>
+    <p><b>${g.zeroWaste}% zero-waste.</b> Meals share ingredients, so nothing turns into a science experiment in the back of your fridge.</p>
     ${lo.length ? `<ul>${lo.map(l => `<li>Left over: ${esc(l.left)} ${esc(l.name.toLowerCase())} (${esc(l.keeps)})</li>`).join("")}</ul>` : ""}`;
   const by = {};
   g.rows.forEach(r => (by[r.dept] = by[r.dept] || []).push(r));
@@ -349,7 +349,7 @@ function renderGrocery() {
   if (s2) $("#openStore").textContent = S.store === "walmart" ? "Add everything to my Walmart cart" : `Open ${s2.name}`;
   $("#exportNote").textContent = S.store === "walmart" ? "One tap puts the whole list in your Walmart cart for pickup or delivery. If something's out of stock at your store, Walmart offers a replacement." : s2 ? `Tap Find next to any item to find it at ${s2.name}, then add it to your cart. "Open ${s2.name}" also copies your full list.` : "Copy or share the list, or check items off here as you shop.";
   renderAmazon();
-  $("#pantry").innerHTML = g.pantry.length ? `<b>Check your pantry:</b> ${g.pantry.map(esc).join(", ")}` : "";
+  $("#pantry").innerHTML = g.pantry.length ? `<b>Check your pantry</b> (you probably have these): ${g.pantry.map(esc).join(", ")}` : "";
 }
 $("#list").addEventListener("change", e => {
   const k = e.target.dataset.key; if (!k) return;
@@ -409,7 +409,7 @@ function amazonKeys() {
 }
 function renderAmazon() {
   const keys = amazonKeys();
-  $("#amazon").innerHTML = `<div class="azhead"><b>Stock your locker</b><span>Shelf-stable protein, shipped to your door</span></div>
+  $("#amazon").innerHTML = `<div class="azhead"><b>Stock your locker</b><span>For the weeks when packing just isn't happening. Ships to your door.</span></div>
     <ul>${keys.map(k => `<li><span>${esc(AMAZON[k].name)}</span><small>${esc(AMAZON[k].pack)}</small></li>`).join("")}</ul>
     <button class="btn" id="amazonBtn" type="button">Add these to my Amazon cart</button>
     <p class="note">Multipacks last a few weeks. If you order these, skip them on your grocery run.${AMAZON_TAG ? " ScrubFuel may earn a small commission." : ""}</p>`;
@@ -458,6 +458,10 @@ const pushSupported = () => "serviceWorker" in navigator && "PushManager" in win
 const b64ToBytes = b64 => { const p = "=".repeat((4 - b64.length % 4) % 4), raw = atob((b64 + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(raw, c => c.charCodeAt(0)); };
 const at = (dateIso, min) => new Date(fromIso(dateIso).getTime() + min * 6e4);
 const clockOf = d => hm(d.getHours() * 60 + d.getMinutes());
+const pick = (arr, i) => arr[i % arr.length];
+const PACK_LINES = ["Future you at 3 AM says thanks.", "Way better than the vending machine.", "Bag packed, one less thing to think about.", "Packed bag now, no cafeteria roulette later."];
+const CAF_LINES = ["Water from here on. Your pillow will thank you.", "Switch to water. Sleep-you is counting on it.", "That's the last coffee. Water from here."];
+const DIP_LINES = ["Beats the vending machine (and a 4th coffee).", "Bright light and a quick lap help too.", "Protein now, fewer regrets at 6 AM."];
 function remindEvents() {
   if (!plan) return [];
   const c = plan.cfg, R = S.remind, ev = [], now = Date.now();
@@ -466,20 +470,20 @@ function remindEvents() {
     const meal = its.find(it => it.slot === "meal"), snacks = its.filter(it => it.slot === "snack"), prot = its.reduce((t, it) => t + it.recipe.p, 0);
     const when = sh.type === "night" ? "tonight's" : "today's";
     if (R.pack) ev.push({ at: w.start.getTime() - 75 * 6e4, tag: "pack-" + sh.date, title: `🎒 Pack for ${when} shift`,
-      body: `${meal ? meal.recipe.n : "Your meal"}${snacks.length ? " + " + snacks.map(s => s.recipe.n).join(", ") : ""}. About ${prot} g protein today.` });
+      body: `${meal ? meal.recipe.n : "Your meal"}${snacks.length ? " + " + snacks.map(s => s.recipe.n).join(", ") : ""}. About ${prot} g protein. ${pick(PACK_LINES, i)}` });
     const h = hydration(sh.type, sh.type === "night" ? c.nightStart : c.dayStart, c.len);
     const stop = h.events.find(e => e.k === "stop"), dip = h.events.find(e => e.k === "dip");
     if (R.caf && stop) ev.push({ at: at(sh.date, stop.m).getTime(), tag: "caf-" + sh.date, title: "☕ Last call for caffeine",
-      body: `Sleep's planned around ${h.sleep}. Water or electrolytes from here.` });
+      body: `Sleep's planned around ${h.sleep}. ${pick(CAF_LINES, i)}` });
     if (R.dip && dip) { const sn = snacks[snacks.length - 1]; ev.push({ at: at(sh.date, dip.m).getTime(), tag: "dip-" + sh.date,
       title: sh.type === "night" ? "⚡ 3 AM dip: protein time" : "⚡ Afternoon slump: protein time",
-      body: `${sn ? sn.recipe.n + " and" : "A protein snack and"} a glass of water beats sugar or another coffee.` }); }
+      body: `${sn ? sn.recipe.n : "A protein snack"} and some water. ${pick(DIP_LINES, i)}` }); }
   });
   const first = c.shifts[0], last = c.shifts[c.shifts.length - 1];
   if (R.prep && first) { const T = prepTasks(); if (T.length > 1) ev.push({ at: at(first.date, -6 * 60).getTime(), tag: "prep", title: "🔪 Prep night",
-    body: `${T.length} quick tasks, about ${prepMinutes(T)} min, and your whole stretch is ready. Tap for the checklist.` }); }
+    body: `${T.length} quick tasks, about ${prepMinutes(T)} min, and your whole stretch is handled. Tap for the checklist.` }); }
   if (R.next && last) { const lw = shiftWindow(last, c); const d = new Date(lw.end); d.setHours(18, 0, 0, 0); if (d < lw.end) d.setDate(d.getDate() + 1);
-    ev.push({ at: d.getTime(), tag: "next", title: "🗓 Got your next shifts?", body: "Tap them in and get one grocery list for the whole stretch." }); }
+    ev.push({ at: d.getTime(), tag: "next", title: "🗓 Got your next shifts?", body: "Did the schedule drop? Tap your shifts in and get one grocery list for the whole stretch." }); }
   return ev.filter(e => e.at > now).sort((a, b) => a.at - b.at);
 }
 function renderRemind() {
@@ -557,8 +561,8 @@ if (!PREVIEW && "serviceWorker" in navigator) window.addEventListener("load", ()
 
 /* ── boot ── */
 syncControls(); renderDays(); regen(); checkInstacart();
-if (fromShare) { confirmShifts(); save(); toast("Opened a shared plan. Edit it for your shifts."); }
-else if (newWeek) { save(); setupOpen = true; renderSetupBar(); toast("New week! Tap your next shifts."); }
+if (fromShare) { confirmShifts(); save(); toast("A coworker's plan! Tap your own shifts to make it yours."); }
+else if (newWeek) { save(); setupOpen = true; renderSetupBar(); toast("New week, new schedule. Tap your shifts."); }
 else if (!saved) store.set("settings", S);
 setInterval(() => { if (plan && document.visibilityState === "visible") renderToday(); }, 60000);
 if (HOST.endsWith(".test")) window.__sf = { remindEvents: () => { S.remind = { ...S.remind, pack: true, caf: true, dip: true, prep: true, next: true }; return remindEvents(); } };

@@ -62,10 +62,10 @@
   <section class="step" aria-labelledby="s2">
     <div class="stephead"><span class="num">2</span><h2 id="s2">Floor rules</h2><p class="stepsub">The unwritten ones: no smelly food, a microwave line, and 7-minute breaks.</p></div>
     <div class="rules">
-      <button class="rule" type="button" data-f="odor" aria-pressed="false"><b>Zero odor</b><span>No fish, garlic, eggs or strong spices on the unit</span></button>
-      <button class="rule" type="button" data-f="speed" aria-pressed="false"><b>Speed eat</b><span>Eat in 7 minutes or less, snacks one-handed</span></button>
-      <button class="rule" type="button" data-f="nomic" aria-pressed="false"><b>No microwave</b><span>Good cold, for when the line is 4 deep</span></button>
-      <button class="rule" type="button" data-f="hydro" aria-pressed="false"><b>Hydration plan</b><span>Timed caffeine and electrolytes to beat the crash</span></button>
+      <button class="rule" type="button" data-f="odor" aria-pressed="false"><b>Zero odor</b><span>No fish, garlic or eggs. Your coworkers (and patients) thank you.</span></button>
+      <button class="rule" type="button" data-f="speed" aria-pressed="false"><b>Speed eat</b><span>7 minutes or less, because that’s the break you actually get.</span></button>
+      <button class="rule" type="button" data-f="nomic" aria-pressed="false"><b>No microwave</b><span>Tastes fine cold, for when the microwave line is 4 deep.</span></button>
+      <button class="rule" type="button" data-f="hydro" aria-pressed="false"><b>Hydration plan</b><span>Coffee and water timing, so no 3 AM crash and no staring at the ceiling at noon.</span></button>
     </div>
     <div class="chips" role="group" aria-label="Diet">
       <button class="chip" type="button" data-d="v" aria-pressed="false">Vegetarian</button>
@@ -92,7 +92,7 @@
   </section>
 
   <section class="remind" id="remind" aria-labelledby="rh">
-    <div class="rmhead"><div><h2 id="rh">Shift reminders</h2><p id="remindSub">A nudge at the moments that matter, so you don't have to remember.</p></div>
+    <div class="rmhead"><div><h2 id="rh">Shift reminders</h2><p id="remindSub">A tap on the shoulder at the right moments, so your brain can clock out too.</p></div>
       <button type="button" class="toggle" id="remindToggle" role="switch" aria-checked="false" aria-labelledby="rh"><span></span></button></div>
     <div class="rmlist" id="remindList"></div>
     <p class="note" id="remindNote"></p>
@@ -104,7 +104,7 @@
   </section>
 
   <section class="grocery" id="grocery" aria-labelledby="gh">
-    <div class="stephead"><h2 id="gh">One-store grocery list</h2><span class="hint" id="listMeta"></span></div>
+    <div class="stephead"><h2 id="gh">One grocery run</h2><span class="hint" id="listMeta"></span></div>
     <div class="storepick">
       <span class="sq">Where are you shopping?</span>
       <div class="storeseg" role="radiogroup" aria-label="Store" id="storeSeg">
@@ -126,7 +126,7 @@
 
   <section class="unit">
     <h2>Share with your unit</h2>
-    <p>Coworkers open the same plan with one tap, then tweak it for their own shifts.</p>
+    <p>Somebody on your unit is about to eat vending machine crackers for dinner again. Send them your plan; they can make it theirs in one tap.</p>
     <button class="btn primary" id="sharePlanBtn" type="button">Share my plan</button>
   </section>
 
@@ -144,7 +144,7 @@
 <div class="sheet recipe" id="recipeSheet" hidden role="dialog" aria-modal="true" aria-labelledby="recipeTitle">
   <div class="sheethead"><b id="recipeTitle">Recipe</b><button class="x" id="recipeClose" type="button" aria-label="Close recipe">✕</button></div>
   <div id="recipeBody"></div>
-  <button class="nope" id="nopeBtn" type="button">Not for me. Don’t suggest this again.</button>
+  <button class="nope" id="nopeBtn" type="button">Not for me. (We won’t take it personally.)</button>
 </div>
 <textarea id="copyArea" class="sr" aria-hidden="true" tabindex="-1"></textarea>
 
