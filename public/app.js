@@ -261,7 +261,13 @@ function renderToday() {
   }
   const done = bag.filter(it => pk[it.k]).length;
   el.hidden = false;
-  el.innerHTML = `<div class="tdhead"><div class="tdrow"><span class="tdtag">${tag}</span><button type="button" class="tdedit" id="tdEdit">Change shifts</button></div><h2>${title}</h2><p class="tdwhat">What to eat and pack for this shift.</p></div>
+  const mini = store.get("tdmin", null) === sh.date;      // shrunk for this shift only; the next shift opens full again
+  el.classList.toggle("mini", mini);
+  if (mini) {
+    el.innerHTML = `<button type="button" class="tdmini" id="tdExpand" aria-expanded="false"><span><b>${title}</b> · ${done} of ${bag.length} packed</span><span class="chev" aria-hidden="true">▾</span></button>`;
+    return;
+  }
+  el.innerHTML = `<div class="tdhead"><div class="tdrow"><span class="tdtag">${tag}</span><span class="tdbtns"><button type="button" class="tdedit" id="tdEdit">Change shifts</button><button type="button" class="tdx" id="tdMin" data-date="${sh.date}" aria-label="Shrink this card">✕</button></span></div><h2>${title}</h2><p class="tdwhat">What to eat and pack for this shift.</p></div>
     ${next}
     ${pre && mode !== "on" ? `<p class="tdsub">Eat before you go: <button type="button" class="linkbtn" data-r="${pre.k}">${esc(pre.recipe.n)}</button></p>` : ""}
     <div class="bag"><div class="baghead"><b>${mode === "on" ? "In your bag" : "Pack your bag"}</b><span>${done}/${bag.length} packed · ≈ ${prot} g protein</span></div>
@@ -269,6 +275,8 @@ function renderToday() {
     <p class="tdsub tdrem">${S.remind && S.remind.on ? "Reminders are on for this stretch." : `<button type="button" class="linkbtn" id="tdRemind">Turn on reminders</button> and you won't have to remember any of this.`}</p>`;
 }
 $("#today").addEventListener("click", e => {
+  const m = e.target.closest("#tdMin"); if (m) { store.set("tdmin", m.dataset.date); renderToday(); return; }
+  if (e.target.closest("#tdExpand")) { store.set("tdmin", null); renderToday(); return; }
   if (e.target.closest("#tdEdit")) { setupOpen = true; renderSetupBar(); $("#setup").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
   if (e.target.closest("#tdRemind")) { $("#remind").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
   const b = e.target.closest("[data-r]"); if (b) openRecipe(+b.dataset.r);

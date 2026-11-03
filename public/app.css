@@ -250,3 +250,10 @@ footer p{margin:0}
 .tdrow{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .tdedit{border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:999px;padding:5px 12px;font-weight:700;font-size:13px}
 .tdwhat{margin:2px 0 0;font-size:14px;color:var(--muted)}
+
+.tdbtns{display:flex;gap:6px;align-items:center}
+.tdx{border:0;background:transparent;color:var(--muted);width:32px;height:32px;border-radius:50%;font-size:14px}
+.today.mini{padding:0;background:var(--accent-soft)}
+.tdmini{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;border:0;padding:13px 16px;font-size:14px;color:var(--muted);border-radius:var(--r)}
+.tdmini b{color:var(--ink)}
+.tdmini .chev{color:var(--accent);font-weight:700}
